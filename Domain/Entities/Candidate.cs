@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Domain.Entities
+﻿namespace Domain.Entities
 {
-    public class Candidate
+    public class Candidate : AbstractUser
     {
+        public byte[] Resume { get; set; }
+        public List<JobApplication> JobApplications { get; set; } = [];
     }
 }

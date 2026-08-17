@@ -1,8 +1,13 @@
 using Domain.Repositories;
 using FluentValidation;
 using Infrastructure;
+using Infrastructure.Identity;
 using JobApplicationAPI.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +26,32 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<JwtService>();
+
+builder.Services.AddIdentityCore<AppUser>(opt =>
+{
+    opt.User.RequireUniqueEmail = true;
+    opt.Password.RequiredLength = 5;
+    opt.Password.RequiredUniqueChars = 2;
+})
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>();
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(opt =>
+    {
+        opt.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateLifetime = false,
+            ValidateIssuerSigningKey = true,
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidIssuer = "JobApplicationSystem.API",
+            ValidAudience = "JobApplicationSystem.Client",
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("OvoJeNekiDovoljnoDugacakStringZaPotpis"))
+        };
+
+    });
 
 var app = builder.Build();
 
