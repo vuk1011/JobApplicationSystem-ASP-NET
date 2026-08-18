@@ -1,6 +1,6 @@
 ﻿namespace Domain.Entities
 {
-    public class Employee : AbstractUser
+    public class Employee : GeneralUser
     {
         public string NationalId { get; set; } = string.Empty;
         public DateOnly DateBorn { get; set; }

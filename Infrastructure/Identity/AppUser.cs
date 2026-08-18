@@ -2,7 +2,14 @@
 
 namespace Infrastructure.Identity
 {
-    public abstract class AppUser : IdentityUser
+    public class AppUser : IdentityUser
     {
+        public UserType UserType { get; set; }
+    }
+
+    public enum UserType
+    {
+        Candidate,
+        Employee,
     }
 }
