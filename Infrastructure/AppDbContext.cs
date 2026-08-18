@@ -1,4 +1,5 @@
-﻿using Infrastructure.Identity;
+﻿using Domain.Entities;
+using Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,14 @@ namespace Infrastructure
             : base(options)
         {
         }
+
+        public DbSet<Candidate> Candidates { get; set; }
+        public DbSet<Employee> Employees { get; set; }
+        public DbSet<JobPosting> JobPostings { get; set; }
+        public DbSet<Offer> Offers { get; set; }
+        public DbSet<JobApplication> JobApplications { get; set; }
+        public DbSet<Interview> Interviews { get; set; }
+        public DbSet<Company> Companies { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

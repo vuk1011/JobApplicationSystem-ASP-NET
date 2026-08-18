@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Domain.Repositories
 {
-    public interface IRepository
+    public interface IRepository<T> where T : class
     {
     }
 }
