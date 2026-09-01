@@ -7,6 +7,6 @@
         public string Description { get; set; } = string.Empty;
         public DateTime DateTimeScheduled { get; set; }
         public long JobApplicationId { get; set; }
-        public JobApplication JobApplication { get; set; }
+        public JobApplication JobApplication { get; set; } = null!;
     }
 }

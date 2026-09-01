@@ -6,13 +6,13 @@
         public DateOnly DateSubmitted { get; set; }
         public JobApplicationStatus Status { get; set; }
         public long JobPostingId { get; set; }
-        public JobPosting JobPosting { get; set; }
-        public string EmployeeId { get; set; }
-        public Employee Employee { get; set; }
-        public string CandidateId { get; set; }
-        public Candidate Candidate { get; set; }
-        public List<Offer> Offers { get; set; } = [];
-        public List<Interview> Interviews { get; set; } = [];
+        public JobPosting JobPosting { get; set; } = null!;
+        public long? EmployeeId { get; set; }
+        public Employee? Employee { get; set; }
+        public long CandidateId { get; set; }
+        public Candidate Candidate { get; set; } = null!;
+        public List<Offer> Offers { get; } = [];
+        public List<Interview> Interviews { get; } = [];
 
         public bool IsManaged => Employee != null;
     }

@@ -8,7 +8,7 @@
         public DateOnly DatePublished { get; set; }
         public DateOnly DateExpires { get; set; }
         public long CompanyId { get; set; }
-        public Company Company { get; set; }
+        public Company Company { get; set; } = null!;
 
         public bool IsClosed => DateExpires < DateOnly.FromDateTime(DateTime.Today);
     }

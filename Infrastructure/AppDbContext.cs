@@ -1,5 +1,7 @@
 ﻿using Domain.Entities;
+using Infrastructure.EntityConfigurations;
 using Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,6 +31,19 @@ namespace Infrastructure
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<IdentityUserPasskey<string>>(passkey =>
+            {
+                passkey.HasKey(p => new { p.UserId, p.CredentialId });
+                passkey.ComplexProperty(p => p.Data);
+            });
+
+            new CandidateEntityTypeConfiguration().Configure(modelBuilder.Entity<Candidate>());
+            new EmployeeEntityTypeConfiguration().Configure(modelBuilder.Entity<Employee>());
+            new JobPostingEntityTypeConfiguration().Configure(modelBuilder.Entity<JobPosting>());
+            new OfferEntityTypeConfiguration().Configure(modelBuilder.Entity<Offer>());
+            new JobApplicationEntityTypeConfiguration().Configure(modelBuilder.Entity<JobApplication>());
+            new InterviewEntityTypeConfiguration().Configure(modelBuilder.Entity<Interview>());
+            new CompanyEntityTypeConfiguration().Configure(modelBuilder.Entity<Company>());
         }
     }
 }
