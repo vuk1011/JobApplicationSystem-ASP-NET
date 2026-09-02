@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace JobApplicationAPI.Controllers.Candidates
 {
@@ -7,5 +6,15 @@ namespace JobApplicationAPI.Controllers.Candidates
     [ApiController]
     public class InterviewsController : ControllerBase
     {
+        public InterviewsController()
+        {
+
+        }
+
+        [HttpGet]
+        public IActionResult GetAll([FromQuery] long jobApplicationId)
+        {
+            return Ok();
+        }
     }
 }

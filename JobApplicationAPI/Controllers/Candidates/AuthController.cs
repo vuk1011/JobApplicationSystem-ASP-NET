@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using JobApplicationAPI.DTOs.Users;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JobApplicationAPI.Controllers.Candidates
@@ -7,5 +7,21 @@ namespace JobApplicationAPI.Controllers.Candidates
     [ApiController]
     public class AuthController : ControllerBase
     {
+        public AuthController()
+        {
+
+        }
+
+        [HttpPost("login")]
+        public IActionResult Login([FromBody] LoginRequest request)
+        {
+            return Ok();
+        }
+
+        [HttpPost("register")]
+        public IActionResult Register([FromBody] RegisterCandidateRequest request)
+        {
+            return Ok();
+        }
     }
 }

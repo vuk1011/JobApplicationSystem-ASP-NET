@@ -7,5 +7,15 @@ namespace JobApplicationAPI.Controllers.Candidates
     [ApiController]
     public class JobPostingsController : ControllerBase
     {
+        public JobPostingsController()
+        {
+
+        }
+
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            return Ok();
+        }
     }
 }
