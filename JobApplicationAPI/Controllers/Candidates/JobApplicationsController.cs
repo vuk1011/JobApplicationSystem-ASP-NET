@@ -1,4 +1,5 @@
-﻿using JobApplicationAPI.DTOs.JobApplications;
+﻿using JobApplicationAPI.DTOs;
+using JobApplicationAPI.DTOs.JobApplications;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JobApplicationAPI.Controllers.Candidates
@@ -13,25 +14,25 @@ namespace JobApplicationAPI.Controllers.Candidates
         }
 
         [HttpPost]
-        public IActionResult Submit([FromBody] SubmitJobApplicationRequest request)
+        public ActionResult<ApiResponse> Submit([FromBody] SubmitJobApplicationRequest request)
         {
             return Ok();
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public ActionResult<ApiResponse<List<JobApplicationCandidateDto>>> GetAll()
         {
             return Ok();
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get([FromRoute] long id)
+        public ActionResult<ApiResponse<JobApplicationCandidateDto>> Get([FromRoute] long id)
         {
             return Ok();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Withdraw([FromRoute] long id)
+        public ActionResult<ApiResponse> Withdraw([FromRoute] long id)
         {
             return Ok();
         }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using JobApplicationAPI.DTOs;
+using JobApplicationAPI.DTOs.JobPostings;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JobApplicationAPI.Controllers.Candidates
@@ -13,7 +14,7 @@ namespace JobApplicationAPI.Controllers.Candidates
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public ActionResult<ApiResponse<List<JobPostingDto>>> GetAll()
         {
             return Ok();
         }

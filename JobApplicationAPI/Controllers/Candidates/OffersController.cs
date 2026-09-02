@@ -1,5 +1,5 @@
-﻿using JobApplicationAPI.DTOs.Offers;
-using Microsoft.AspNetCore.Http;
+﻿using JobApplicationAPI.DTOs;
+using JobApplicationAPI.DTOs.Offers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JobApplicationAPI.Controllers.Candidates
@@ -14,13 +14,13 @@ namespace JobApplicationAPI.Controllers.Candidates
         }
 
         [HttpGet]
-        public IActionResult GetAll([FromQuery] long jobApplicationId)
+        public ActionResult<ApiResponse<List<OfferDto>>> GetAll([FromQuery] long jobApplicationId)
         {
             return Ok();
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update([FromRoute] long offerId, [FromBody] UpdateOfferRequest request)
+        public ActionResult<ApiResponse> Update([FromRoute] long offerId, [FromBody] UpdateOfferRequest request)
         {
             return Ok();
         }

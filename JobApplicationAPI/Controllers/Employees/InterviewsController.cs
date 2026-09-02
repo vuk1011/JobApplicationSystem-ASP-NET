@@ -1,5 +1,5 @@
-﻿using JobApplicationAPI.DTOs.Interviews;
-using Microsoft.AspNetCore.Http;
+﻿using JobApplicationAPI.DTOs;
+using JobApplicationAPI.DTOs.Interviews;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JobApplicationAPI.Controllers.Employees
@@ -14,19 +14,19 @@ namespace JobApplicationAPI.Controllers.Employees
         }
 
         [HttpGet]
-        public IActionResult GetAll([FromQuery] long jobApplicationId)
+        public ActionResult<ApiResponse<List<InterviewDto>>> GetAll([FromQuery] long jobApplicationId)
         {
             return Ok();
         }
 
         [HttpPost]
-        public IActionResult Schedule([FromBody] CreateInterviewRequest request)
+        public ActionResult<ApiResponse> Schedule([FromBody] CreateInterviewRequest request)
         {
             return Ok();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Cancel([FromRoute] long interviewId)
+        public ActionResult<ApiResponse> Cancel([FromRoute] long interviewId)
         {
             return Ok();
         }

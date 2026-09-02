@@ -1,4 +1,5 @@
-﻿using JobApplicationAPI.DTOs.Offers;
+﻿using JobApplicationAPI.DTOs;
+using JobApplicationAPI.DTOs.Offers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JobApplicationAPI.Controllers.Employees
@@ -13,19 +14,19 @@ namespace JobApplicationAPI.Controllers.Employees
         }
 
         [HttpGet]
-        public IActionResult GetAll([FromQuery] long jobApplicationId)
+        public ActionResult<ApiResponse<List<OfferDto>>> GetAll([FromQuery] long jobApplicationId)
         {
             return Ok();
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] CreateOfferRequest request)
+        public ActionResult<ApiResponse> Create([FromBody] CreateOfferRequest request)
         {
             return Ok();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete([FromRoute] long id)
+        public ActionResult<ApiResponse> Delete([FromRoute] long id)
         {
             return Ok();
         }

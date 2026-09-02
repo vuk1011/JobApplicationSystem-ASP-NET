@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using JobApplicationAPI.DTOs;
+using JobApplicationAPI.DTOs.Interviews;
+using Microsoft.AspNetCore.Mvc;
 
 namespace JobApplicationAPI.Controllers.Candidates
 {
@@ -12,7 +14,7 @@ namespace JobApplicationAPI.Controllers.Candidates
         }
 
         [HttpGet]
-        public IActionResult GetAll([FromQuery] long jobApplicationId)
+        public ActionResult<ApiResponse<List<InterviewDto>>> GetAll([FromQuery] long jobApplicationId)
         {
             return Ok();
         }

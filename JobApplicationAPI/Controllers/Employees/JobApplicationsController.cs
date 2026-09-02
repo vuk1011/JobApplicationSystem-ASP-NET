@@ -1,4 +1,6 @@
-﻿using JobApplicationAPI.DTOs.JobApplications;
+﻿using JobApplicationAPI.DTOs;
+using JobApplicationAPI.DTOs.JobApplications;
+using JobApplicationAPI.DTOs.Users;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JobApplicationAPI.Controllers.Employees
@@ -13,51 +15,51 @@ namespace JobApplicationAPI.Controllers.Employees
         }
 
         [HttpGet]
-        public IActionResult GetAllByJobPosting([FromQuery] long jobPostingId)
+        public ActionResult<ApiResponse<List<JobApplicationEmployeeDto>>> GetAllByJobPosting([FromQuery] long jobPostingId)
         {
             return Ok();
         }
 
         [HttpGet("{id}")]
-        public IActionResult Get([FromRoute] long id)
+        public ActionResult<ApiResponse<JobApplicationEmployeeDto>> Get([FromRoute] long id)
         {
             return Ok();
         }
 
         [HttpGet("managed")]
-        public IActionResult GetAllManaged()
+        public ActionResult<ApiResponse<List<JobApplicationEmployeeDto>>> GetAllManaged()
         {
             return Ok();
         }
 
         [HttpPut("managed")]
-        public IActionResult AddToManaged([FromBody] ManageJobApplicationRequest request)
+        public ActionResult<ApiResponse> AddToManaged([FromBody] ManageJobApplicationRequest request)
         {
             return Ok();
         }
 
         [HttpGet("managed/{id}")]
-        public IActionResult GetManaged([FromRoute] long id)
+        public ActionResult<ApiResponse<JobApplicationEmployeeDto>> GetManaged([FromRoute] long id)
         {
             return Ok();
         }
 
         [HttpPut("managed/{id}")]
-        public IActionResult UpdateStatus([FromRoute] long id, [FromBody] UpdateJobApplicationStatusRequest request)
+        public ActionResult<ApiResponse> UpdateStatus([FromRoute] long id, [FromBody] UpdateJobApplicationStatusRequest request)
         {
             return Ok();
         }
 
         [HttpGet("managed/{id}/candidate/profile")]
-        public IActionResult GetCandidateProfileForJobApplication([FromRoute] long id)
+        public ActionResult<ApiResponse<CandidateDto>> GetCandidateProfileForJobApplication([FromRoute] long id)
         {
             return Ok();
         }
 
         [HttpGet("managed/{id}/candidate/resume")]
-        public IActionResult GetCandidateResumeForJobApplication([FromRoute] long id)
+        public async Task<FileResult> GetCandidateResumeForJobApplication([FromRoute] long id)
         {
-            return Ok();
+            return File(Array.Empty<byte>(), "application/pdf", "resume.pdf");
         }
     }
 }

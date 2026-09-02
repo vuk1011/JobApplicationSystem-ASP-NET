@@ -1,5 +1,5 @@
-﻿using JobApplicationAPI.DTOs.Users;
-using Microsoft.AspNetCore.Http;
+﻿using JobApplicationAPI.DTOs;
+using JobApplicationAPI.DTOs.Users;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JobApplicationAPI.Controllers.Candidates
@@ -14,31 +14,31 @@ namespace JobApplicationAPI.Controllers.Candidates
         }
 
         [HttpGet("resume")]
-        public IActionResult GetResume()
+        public async Task<FileResult> GetResume()
         {
-            return Ok();
+            return File(Array.Empty<byte>(), "application/pdf", "resume.pdf");
         }
 
         [HttpPut("resume")]
-        public IActionResult UploadResume(IFormFile file)
+        public async Task<ActionResult<ApiResponse>> UploadResume(IFormFile file)
         {
             return Ok();
         }
 
         [HttpDelete("resume")]
-        public IActionResult DeleteResume()
+        public async Task<ActionResult<ApiResponse>> DeleteResume()
         {
             return Ok();
         }
 
         [HttpGet("profile")]
-        public IActionResult GetProfile()
+        public ActionResult<ApiResponse<CandidateDto>> GetProfile()
         {
             return Ok();
         }
 
         [HttpPut("profile")]
-        public IActionResult UpdateProfile([FromBody] UpdateCandidateRequest request)
+        public ActionResult<ApiResponse<CandidateDto>> UpdateProfile([FromBody] UpdateCandidateRequest request)
         {
             return Ok();
         }
