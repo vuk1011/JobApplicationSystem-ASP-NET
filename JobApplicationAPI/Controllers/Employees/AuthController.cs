@@ -62,7 +62,7 @@ namespace JobApplicationAPI.Controllers.Employees
             var token = await _jwtService.CreateTokenAsync(user, $"{employee.FirstName} {employee.LastName}");
             return Ok(new ApiResponse<LoginSuccessResponse>("Login successful", new LoginSuccessResponse
             {
-                Token = token,
+                Jwt = token,
                 FirstName = employee.FirstName,
             }));
         }
