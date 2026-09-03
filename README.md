@@ -3,9 +3,25 @@
 This project reworks the Spring Boot backend from [this repository](https://github.com/vuk1011/job-application-system), in ASP.NET Core.
 The same Vue.js frontend can be used as in the linked repository.
 
-## Running
+## Running the Web API
 
-After running the project in Visual Studio, the API is exposed at `https://localhost:5001`
+Go to terminal and run:
+```bash
+dotnet run --project JobApplicationAPI
+```
+The API will be exposed at `https://localhost:5001`.
+
+## Migrations
+
+To create a new migration, go to terminal and run:
+```bash
+dotnet ef migrations add <MigrationName> --project Infrastructure --startup-project JobApplicationAPI
+```
+
+To apply migrations to the database, run:
+```bash
+dotnet ef database update --project JobApplicationAPI
+```
 
 ## Swagger Docs
 
