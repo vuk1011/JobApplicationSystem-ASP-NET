@@ -1,4 +1,5 @@
-﻿using JobApplicationAPI.DTOs;
+﻿using FluentValidation;
+using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Interviews;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,9 +11,11 @@ namespace JobApplicationAPI.Controllers.Employees
     [Authorize(Roles = "Employee")]
     public class InterviewsController : ControllerBase
     {
-        public InterviewsController()
-        {
+        private readonly IValidator<CreateInterviewRequest> _createValidator;
 
+        public InterviewsController(IValidator<CreateInterviewRequest> createValidator)
+        {
+            _createValidator = createValidator;
         }
 
         [HttpGet]

@@ -1,4 +1,5 @@
-﻿using JobApplicationAPI.DTOs;
+﻿using FluentValidation;
+using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,9 +11,11 @@ namespace JobApplicationAPI.Controllers.Candidates
     [Authorize(Roles = "Candidate")]
     public class CandidatesController : ControllerBase
     {
-        public CandidatesController()
-        {
+        private readonly IValidator<UpdateCandidateRequest> _updateCandidateValidator;
 
+        public CandidatesController(IValidator<UpdateCandidateRequest> updateCandidateValidator)
+        {
+            _updateCandidateValidator = updateCandidateValidator;
         }
 
         [HttpGet("resume")]
