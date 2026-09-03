@@ -7,9 +7,8 @@ namespace Domain.Repositories
 {
     public interface IRepository<T> where T : class
     {
-        Task<List<T>> GetAllAsync();
-        Task<List<T>> FindAsync(Expression<Func<T, bool>> predicate);
-        ValueTask<T?> GetByIdAsync(params object[] keyValues);
+        IEnumerable<T> GetAll();
+        IEnumerable<T> Find(Expression<Func<T, bool>> predicate);
         void Add(T entity);
         void Remove(T entity);
         void Update(T entity);

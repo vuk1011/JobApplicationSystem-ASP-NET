@@ -18,12 +18,10 @@ namespace Infrastructure.Repositories
             DbSet = context.Set<T>();
         }
 
-        public Task<List<T>> GetAllAsync() => DbSet.ToListAsync();
+        public IEnumerable<T> GetAll() => DbSet.ToList();
 
-        public Task<List<T>> FindAsync(Expression<Func<T, bool>> predicate) =>
-            DbSet.Where(predicate).ToListAsync();
-
-        public ValueTask<T?> GetByIdAsync(params object[] keyValues) => DbSet.FindAsync(keyValues);
+        public IEnumerable<T> Find(Expression<Func<T, bool>> predicate) =>
+            DbSet.Where(predicate).ToList();
 
         public void Add(T entity) => DbSet.Add(entity);
 

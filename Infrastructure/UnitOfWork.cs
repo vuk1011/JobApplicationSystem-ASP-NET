@@ -18,6 +18,8 @@ namespace Infrastructure
         private IJobApplicationRepository? _jobApplications;
         private IInterviewRepository? _interviews;
 
+        private bool _disposed;
+
         public UnitOfWork(AppDbContext context)
         {
             _context = context;
@@ -44,8 +46,26 @@ namespace Infrastructure
         public IInterviewRepository Interviews =>
             _interviews ??= new InterviewRepository(_context);
 
+        public int SaveChanges() => _context.SaveChanges();
+
         public Task<int> SaveChangesAsync() => _context.SaveChangesAsync();
 
-        public void Dispose() => _context.Dispose();
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                _context?.Dispose();
+            }
+
+            _disposed = true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

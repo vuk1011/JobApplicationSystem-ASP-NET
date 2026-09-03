@@ -14,6 +14,7 @@ namespace Domain.Repositories
         IJobApplicationRepository JobApplications { get; }
         IInterviewRepository Interviews { get; }
 
+        int SaveChanges();
         Task<int> SaveChangesAsync();
     }
 }
