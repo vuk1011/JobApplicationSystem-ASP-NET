@@ -8,6 +8,7 @@ namespace Domain.Repositories
     public interface IJobPostingRepository : IRepository<JobPosting>
     {
         IEnumerable<JobPosting> GetAllByCompanyId(long companyId);
+        IEnumerable<JobPosting> GetAllPublished();
         JobPosting? GetByIdWithCompany(long id);
     }
 }

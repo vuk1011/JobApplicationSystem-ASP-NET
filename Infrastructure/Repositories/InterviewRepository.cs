@@ -1,9 +1,6 @@
 using Domain.Entities;
 using Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Infrastructure.Repositories
 {
@@ -12,10 +9,10 @@ namespace Infrastructure.Repositories
         public InterviewRepository(AppDbContext context) : base(context) { }
 
         public IEnumerable<Interview> GetByJobApplicationId(long jobApplicationId) =>
-            DbSet.Where(i => i.JobApplicationId == jobApplicationId).ToList();
+            DbSet.Where(e => e.JobApplicationId == jobApplicationId).ToList();
 
         public Interview? GetByIdWithJobApplication(long id) =>
-            DbSet.Include(i => i.JobApplication)
-                 .FirstOrDefault(i => i.Id == id);
+            DbSet.Include(e => e.JobApplication)
+                 .FirstOrDefault(e => e.Id == id);
     }
 }

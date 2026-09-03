@@ -1,9 +1,6 @@
 using Domain.Entities;
 using Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Infrastructure.Repositories
 {
@@ -15,18 +12,27 @@ namespace Infrastructure.Repositories
             Find(e => e.CandidateId == candidateId && e.JobPostingId == jobPosting).Any();
 
         public IEnumerable<JobApplication> GetUnmanagedByJobPostingId(long jobPostingId) =>
-            DbSet.Include(ja => ja.JobPosting).ThenInclude(jp => jp.Company)
-                 .Where(ja => ja.JobPostingId == jobPostingId && ja.EmployeeId == null)
+            DbSet.Include(e => e.JobPosting).ThenInclude(e => e.Company)
+                 .Where(e => e.JobPostingId == jobPostingId && e.EmployeeId == null)
                  .ToList();
 
         public IEnumerable<JobApplication> GetManagedByEmployeeId(long employeeId) =>
-            DbSet.Include(ja => ja.JobPosting).ThenInclude(jp => jp.Company)
-                 .Where(ja => ja.EmployeeId == employeeId)
+            DbSet.Include(e => e.JobPosting).ThenInclude(e => e.Company)
+                 .Where(e => e.EmployeeId == employeeId)
                  .ToList();
 
         public JobApplication? GetByIdWithDetails(long id) =>
-            DbSet.Include(ja => ja.JobPosting).ThenInclude(jp => jp.Company)
-                 .Include(ja => ja.Employee)
-                 .FirstOrDefault(ja => ja.Id == id);
+            DbSet.Include(e => e.JobPosting).ThenInclude(e => e.Company)
+                 .Include(e => e.Employee)
+                 .FirstOrDefault(e => e.Id == id);
+
+        public IEnumerable<JobApplication> GetByCandidateId(long candidateId) =>
+            DbSet.Include(e => e.JobPosting).ThenInclude(e => e.Company)
+                 .Where(e => e.CandidateId == candidateId)
+                 .ToList();
+
+        public JobApplication? GetByIdForCandidate(long id, long candidateId) =>
+            DbSet.Include(e => e.JobPosting).ThenInclude(e => e.Company)
+                 .FirstOrDefault(e => e.Id == id && e.CandidateId == candidateId);
     }
 }

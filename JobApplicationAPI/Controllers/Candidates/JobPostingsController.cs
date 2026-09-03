@@ -1,4 +1,5 @@
-﻿using Domain.Repositories;
+using Domain.Entities;
+using Domain.Repositories;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.JobPostings;
 using Microsoft.AspNetCore.Authorization;
@@ -21,7 +22,19 @@ namespace JobApplicationAPI.Controllers.Candidates
         [HttpGet]
         public ActionResult<ApiResponse<List<JobPostingDto>>> GetAll()
         {
-            return Ok();
+            var jobPostings = _uow.JobPostings.GetAllPublished().Select(ToDto).ToList();
+            return Ok(new ApiResponse<List<JobPostingDto>>("Job postings retrieved", jobPostings));
         }
+
+        private static JobPostingDto ToDto(JobPosting jobPosting) => new()
+        {
+            Id = jobPosting.Id,
+            Title = jobPosting.Title,
+            Description = jobPosting.Description,
+            DatePublished = jobPosting.DatePublished,
+            DateExpires = jobPosting.DateExpires,
+            IsClosed = jobPosting.IsClosed,
+            CompanyName = jobPosting.Company?.Name ?? string.Empty,
+        };
     }
 }

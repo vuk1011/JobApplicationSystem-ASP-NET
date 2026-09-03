@@ -1,9 +1,12 @@
-﻿using Domain.Repositories;
+using Domain.Entities;
+using Domain.Repositories;
 using FluentValidation;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.JobApplications;
+using JobApplicationAPI.DTOs.JobPostings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace JobApplicationAPI.Controllers.Candidates
 {
@@ -23,27 +26,127 @@ namespace JobApplicationAPI.Controllers.Candidates
         }
 
         [HttpPost]
-        public ActionResult<ApiResponse> Submit([FromBody] SubmitJobApplicationRequest request)
+        public async Task<ActionResult<ApiResponse>> Submit([FromBody] SubmitJobApplicationRequest request)
         {
-            return Ok();
+            var validationResult = await _submitValidator.ValidateAsync(request);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new ApiResponse(string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage))));
+            }
+
+            var candidate = await GetCurrentCandidateAsync();
+            if (candidate is null)
+            {
+                return Unauthorized(new ApiResponse("Candidate not found"));
+            }
+
+            var jobPosting = _uow.JobPostings.GetByIdWithCompany(request.JobPostingId);
+            if (jobPosting is null)
+            {
+                return NotFound(new ApiResponse("Job posting not found"));
+            }
+
+            if (_uow.JobApplications.existsByCandidateIdAndJobPostingId(candidate.Id, request.JobPostingId))
+            {
+                return Conflict(new ApiResponse("You already applied for this job posting"));
+            }
+
+            if (jobPosting.IsClosed)
+            {
+                return BadRequest(new ApiResponse("Job posting closed"));
+            }
+
+            var application = new JobApplication
+            {
+                DateSubmitted = DateOnly.FromDateTime(DateTime.Today),
+                Status = JobApplicationStatus.Submitted,
+                JobPostingId = jobPosting.Id,
+                CandidateId = candidate.Id,
+            };
+            _uow.JobApplications.Add(application);
+            await _uow.SaveChangesAsync();
+
+            return Ok(new ApiResponse("Successfully submitted an application"));
         }
 
         [HttpGet]
-        public ActionResult<ApiResponse<List<JobApplicationCandidateDto>>> GetAll()
+        public async Task<ActionResult<ApiResponse<List<JobApplicationCandidateDto>>>> GetAll()
         {
-            return Ok();
+            var candidate = await GetCurrentCandidateAsync();
+            if (candidate is null)
+            {
+                return Unauthorized(new ApiResponse("Candidate not found"));
+            }
+
+            var applications = _uow.JobApplications.GetByCandidateId(candidate.Id).Select(ToDto).ToList();
+            return Ok(new ApiResponse<List<JobApplicationCandidateDto>>("Successfully retrieved all applications", applications));
         }
 
         [HttpGet("{id}")]
-        public ActionResult<ApiResponse<JobApplicationCandidateDto>> Get([FromRoute] long id)
+        public async Task<ActionResult<ApiResponse<JobApplicationCandidateDto>>> Get([FromRoute] long id)
         {
-            return Ok();
+            var candidate = await GetCurrentCandidateAsync();
+            if (candidate is null)
+            {
+                return Unauthorized(new ApiResponse("Candidate not found"));
+            }
+
+            var application = _uow.JobApplications.GetByIdForCandidate(id, candidate.Id);
+            if (application is null)
+            {
+                return NotFound(new ApiResponse("Job application not found"));
+            }
+
+            return Ok(new ApiResponse<JobApplicationCandidateDto>("Successfully retrieved the application", ToDto(application)));
         }
 
         [HttpDelete("{id}")]
-        public ActionResult<ApiResponse> Withdraw([FromRoute] long id)
+        public async Task<ActionResult<ApiResponse>> Withdraw([FromRoute] long id)
         {
-            return Ok();
+            var candidate = await GetCurrentCandidateAsync();
+            if (candidate is null)
+            {
+                return Unauthorized(new ApiResponse("Candidate not found"));
+            }
+
+            var application = _uow.JobApplications.GetByIdForCandidate(id, candidate.Id);
+            if (application is null)
+            {
+                return NotFound(new ApiResponse("Job application not found"));
+            }
+
+            if (application.Status is JobApplicationStatus.Offered or JobApplicationStatus.Accepted or JobApplicationStatus.Rejected)
+            {
+                return Conflict(new ApiResponse("Job application cannot be withdrawn if state is Offered, Accepted or Rejected"));
+            }
+
+            _uow.JobApplications.Remove(application);
+            await _uow.SaveChangesAsync();
+
+            return Ok(new ApiResponse("Successfully withdrawn an application"));
+        }
+
+        private static JobApplicationCandidateDto ToDto(JobApplication application) => new()
+        {
+            Id = application.Id,
+            DateSubmitted = application.DateSubmitted,
+            Status = application.Status,
+            JobPosting = new JobPostingDto
+            {
+                Id = application.JobPosting.Id,
+                Title = application.JobPosting.Title,
+                Description = application.JobPosting.Description,
+                DatePublished = application.JobPosting.DatePublished,
+                DateExpires = application.JobPosting.DateExpires,
+                IsClosed = application.JobPosting.IsClosed,
+                CompanyName = application.JobPosting.Company?.Name ?? string.Empty,
+            },
+        };
+
+        private async Task<Candidate?> GetCurrentCandidateAsync()
+        {
+            var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return appUserId is null ? null : await _uow.Candidates.GetByAppUserIdAsync(appUserId);
         }
     }
 }

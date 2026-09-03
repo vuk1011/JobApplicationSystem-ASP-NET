@@ -9,6 +9,6 @@ namespace Infrastructure.Repositories
         public CandidateRepository(AppDbContext context) : base(context) { }
 
         public Task<Candidate?> GetByAppUserIdAsync(string appUserId) =>
-            DbSet.FirstOrDefaultAsync(c => c.AppUserId == appUserId);
+            DbSet.FirstOrDefaultAsync(e => e.AppUserId == appUserId);
     }
 }

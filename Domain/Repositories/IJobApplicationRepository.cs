@@ -14,5 +14,8 @@ namespace Domain.Repositories
         IEnumerable<JobApplication> GetUnmanagedByJobPostingId(long jobPostingId);
         IEnumerable<JobApplication> GetManagedByEmployeeId(long employeeId);
         JobApplication? GetByIdWithDetails(long id);
+
+        IEnumerable<JobApplication> GetByCandidateId(long candidateId);
+        JobApplication? GetByIdForCandidate(long id, long candidateId);
     }
 }
