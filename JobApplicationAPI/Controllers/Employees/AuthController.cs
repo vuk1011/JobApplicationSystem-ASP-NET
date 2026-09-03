@@ -68,7 +68,7 @@ namespace JobApplicationAPI.Controllers.Employees
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<ApiResponse<LoginSuccessResponse>>> Register([FromBody] RegisterEmployeeRequest request)
+        public async Task<ActionResult<ApiResponse>> Register([FromBody] RegisterEmployeeRequest request)
         {
             var validationResult = await _registerValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
@@ -107,12 +107,7 @@ namespace JobApplicationAPI.Controllers.Employees
             _uow.Employees.Add(employee);
             await _uow.SaveChangesAsync();
 
-            var token = await _jwtService.CreateTokenAsync(user, $"{employee.FirstName} {employee.LastName}");
-            return Ok(new ApiResponse<LoginSuccessResponse>("Registration successful", new LoginSuccessResponse
-            {
-                Token = token,
-                FirstName = employee.FirstName,
-            }));
+            return Ok(new ApiResponse("Registration successful"));
         }
     }
 }
