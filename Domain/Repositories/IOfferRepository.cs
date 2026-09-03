@@ -7,5 +7,7 @@ namespace Domain.Repositories
 {
     public interface IOfferRepository : IRepository<Offer>
     {
+        IEnumerable<Offer> GetByJobApplicationId(long jobApplicationId);
+        Offer? GetByIdWithJobApplication(long id);
     }
 }

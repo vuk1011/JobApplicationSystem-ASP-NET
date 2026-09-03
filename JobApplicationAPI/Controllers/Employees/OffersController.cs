@@ -1,9 +1,11 @@
-﻿using Domain.Repositories;
+using Domain.Entities;
+using Domain.Repositories;
 using FluentValidation;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Offers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace JobApplicationAPI.Controllers.Employees
 {
@@ -23,21 +25,115 @@ namespace JobApplicationAPI.Controllers.Employees
         }
 
         [HttpGet]
-        public ActionResult<ApiResponse<List<OfferDto>>> GetAll([FromQuery] long jobApplicationId)
+        public async Task<ActionResult<ApiResponse<List<OfferDto>>>> GetAll([FromQuery] long jobApplicationId)
         {
-            return Ok();
+            var employee = await GetCurrentEmployeeAsync();
+            if (employee is null)
+            {
+                return Unauthorized(new ApiResponse("Employee not found"));
+            }
+
+            var application = _uow.JobApplications.GetByIdWithDetails(jobApplicationId);
+            if (application is null)
+            {
+                return NotFound(new ApiResponse("Job application not found"));
+            }
+            if (!application.IsManaged)
+            {
+                return Conflict(new ApiResponse("This job application is not managed"));
+            }
+            if (application.EmployeeId != employee.Id)
+            {
+                return Unauthorized(new ApiResponse("Another employee is managing this job application"));
+            }
+
+            var offers = _uow.Offers.GetByJobApplicationId(jobApplicationId)
+                .Select(o => new OfferDto { Id = o.Id, Name = o.Name, Accepted = o.Accepted })
+                .ToList();
+
+            return Ok(new ApiResponse<List<OfferDto>>("Offers retrieved", offers));
         }
 
         [HttpPost]
-        public ActionResult<ApiResponse> Create([FromBody] CreateOfferRequest request)
+        public async Task<ActionResult<ApiResponse>> Create([FromBody] CreateOfferRequest request)
         {
-            return Ok();
+            var validationResult = await _createValidator.ValidateAsync(request);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new ApiResponse(string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage))));
+            }
+
+            var employee = await GetCurrentEmployeeAsync();
+            if (employee is null)
+            {
+                return Unauthorized(new ApiResponse("Employee not found"));
+            }
+
+            var application = _uow.JobApplications.GetByIdWithDetails(request.JobApplicationId);
+            if (application is null)
+            {
+                return NotFound(new ApiResponse("Job application not found"));
+            }
+            if (!application.IsManaged)
+            {
+                return Conflict(new ApiResponse("This job application is not managed"));
+            }
+            if (application.EmployeeId != employee.Id)
+            {
+                return Unauthorized(new ApiResponse("Another employee is managing this job application"));
+            }
+            if (!JobApplicationStatusUtil.IsStatusChangeAllowed(application.Status, JobApplicationStatus.Offered))
+            {
+                return Conflict(new ApiResponse("Offer cannot be created in current status"));
+            }
+
+            application.Status = JobApplicationStatus.Offered;
+            _uow.JobApplications.Update(application);
+
+            var offer = new Offer
+            {
+                Name = request.Name,
+                JobApplicationId = request.JobApplicationId,
+            };
+            _uow.Offers.Add(offer);
+            await _uow.SaveChangesAsync();
+
+            return Ok(new ApiResponse("Offer created"));
         }
 
         [HttpDelete("{id}")]
-        public ActionResult<ApiResponse> Delete([FromRoute] long id)
+        public async Task<ActionResult<ApiResponse>> Delete([FromRoute] long id)
         {
-            return Ok();
+            var employee = await GetCurrentEmployeeAsync();
+            if (employee is null)
+            {
+                return Unauthorized(new ApiResponse("Employee not found"));
+            }
+
+            var offer = _uow.Offers.GetByIdWithJobApplication(id);
+            if (offer is null)
+            {
+                return NotFound(new ApiResponse("Offer not found"));
+            }
+            if (offer.JobApplication.EmployeeId != employee.Id)
+            {
+                return Unauthorized(new ApiResponse("Another employee is managing the associated job application for the offer"));
+            }
+            if (offer.Accepted is not null)
+            {
+                return Conflict(new ApiResponse("Offer cannot be deleted after it got accepted or rejected"));
+            }
+
+            _uow.Offers.Remove(offer);
+            await _uow.SaveChangesAsync();
+
+            return Ok(new ApiResponse("Offer deleted"));
+        }
+
+        private async Task<Employee?> GetCurrentEmployeeAsync()
+        {
+            var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return appUserId is null ? null : await _uow.Employees.GetByAppUserIdAsync(appUserId);
         }
     }
 }

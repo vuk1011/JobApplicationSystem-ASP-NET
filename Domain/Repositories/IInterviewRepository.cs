@@ -7,5 +7,7 @@ namespace Domain.Repositories
 {
     public interface IInterviewRepository : IRepository<Interview>
     {
+        IEnumerable<Interview> GetByJobApplicationId(long jobApplicationId);
+        Interview? GetByIdWithJobApplication(long id);
     }
 }

@@ -10,5 +10,9 @@ namespace Domain.Repositories
     public interface IJobApplicationRepository : IRepository<JobApplication>
     {
         bool existsByCandidateIdAndJobPostingId(long candidateId, long jobPosting);
+
+        IEnumerable<JobApplication> GetUnmanagedByJobPostingId(long jobPostingId);
+        IEnumerable<JobApplication> GetManagedByEmployeeId(long employeeId);
+        JobApplication? GetByIdWithDetails(long id);
     }
 }

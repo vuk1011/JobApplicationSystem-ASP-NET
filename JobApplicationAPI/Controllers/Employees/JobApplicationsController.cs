@@ -1,10 +1,15 @@
-﻿using Domain.Repositories;
+using Domain.Entities;
+using Domain.Repositories;
 using FluentValidation;
+using Infrastructure.Identity;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.JobApplications;
+using JobApplicationAPI.DTOs.JobPostings;
 using JobApplicationAPI.DTOs.Users;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace JobApplicationAPI.Controllers.Employees
 {
@@ -14,13 +19,19 @@ namespace JobApplicationAPI.Controllers.Employees
     public class JobApplicationsController : ControllerBase
     {
         private readonly IUnitOfWork _uow;
+        private readonly UserManager<AppUser> _userManager;
 
         private readonly IValidator<ManageJobApplicationRequest> _manageValidator;
         private readonly IValidator<UpdateJobApplicationStatusRequest> _updateValidator;
 
-        public JobApplicationsController(IUnitOfWork uow, IValidator<ManageJobApplicationRequest> manageValidator, IValidator<UpdateJobApplicationStatusRequest> updateValidator)
+        public JobApplicationsController(
+            IUnitOfWork uow,
+            UserManager<AppUser> userManager,
+            IValidator<ManageJobApplicationRequest> manageValidator,
+            IValidator<UpdateJobApplicationStatusRequest> updateValidator)
         {
             _uow = uow;
+            _userManager = userManager;
             _manageValidator = manageValidator;
             _updateValidator = updateValidator;
         }
@@ -28,49 +39,256 @@ namespace JobApplicationAPI.Controllers.Employees
         [HttpGet]
         public ActionResult<ApiResponse<List<JobApplicationEmployeeDto>>> GetAllByJobPosting([FromQuery] long jobPostingId)
         {
-            return Ok();
+            var jobPosting = _uow.JobPostings.GetByIdWithCompany(jobPostingId);
+            if (jobPosting is null)
+            {
+                return NotFound(new ApiResponse("Job posting not found"));
+            }
+
+            var applications = _uow.JobApplications.GetUnmanagedByJobPostingId(jobPostingId).Select(ToDto).ToList();
+            return Ok(new ApiResponse<List<JobApplicationEmployeeDto>>("Job applications retrieved", applications));
         }
 
         [HttpGet("{id}")]
         public ActionResult<ApiResponse<JobApplicationEmployeeDto>> Get([FromRoute] long id)
         {
-            return Ok();
+            var application = _uow.JobApplications.GetByIdWithDetails(id);
+            if (application is null)
+            {
+                return NotFound(new ApiResponse("Job application not found"));
+            }
+            if (application.IsManaged)
+            {
+                return Conflict(new ApiResponse("This job application is already managed"));
+            }
+
+            return Ok(new ApiResponse<JobApplicationEmployeeDto>("Job application retrieved", ToDto(application)));
         }
 
         [HttpGet("managed")]
-        public ActionResult<ApiResponse<List<JobApplicationEmployeeDto>>> GetAllManaged()
+        public async Task<ActionResult<ApiResponse<List<JobApplicationEmployeeDto>>>> GetAllManaged()
         {
-            return Ok();
+            var employee = await GetCurrentEmployeeAsync();
+            if (employee is null)
+            {
+                return Unauthorized(new ApiResponse("Employee not found"));
+            }
+
+            var applications = _uow.JobApplications.GetManagedByEmployeeId(employee.Id).Select(ToDto).ToList();
+            return Ok(new ApiResponse<List<JobApplicationEmployeeDto>>("Managed job applications retrieved", applications));
         }
 
         [HttpPut("managed")]
-        public ActionResult<ApiResponse> AddToManaged([FromBody] ManageJobApplicationRequest request)
+        public async Task<ActionResult<ApiResponse>> AddToManaged([FromBody] ManageJobApplicationRequest request)
         {
-            return Ok();
+            var validationResult = await _manageValidator.ValidateAsync(request);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new ApiResponse(string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage))));
+            }
+
+            var employee = await GetCurrentEmployeeAsync();
+            if (employee is null)
+            {
+                return Unauthorized(new ApiResponse("Employee not found"));
+            }
+
+            var application = _uow.JobApplications.GetByIdWithDetails(request.JobApplicationId);
+            if (application is null)
+            {
+                return NotFound(new ApiResponse("Job application not found"));
+            }
+            if (application.IsManaged)
+            {
+                return Conflict(new ApiResponse("This job application is already managed"));
+            }
+
+            application.EmployeeId = employee.Id;
+            application.Status = JobApplicationStatus.UnderReview;
+            _uow.JobApplications.Update(application);
+            await _uow.SaveChangesAsync();
+
+            return Ok(new ApiResponse("Job application added to managed list"));
         }
 
         [HttpGet("managed/{id}")]
-        public ActionResult<ApiResponse<JobApplicationEmployeeDto>> GetManaged([FromRoute] long id)
+        public async Task<ActionResult<ApiResponse<JobApplicationEmployeeDto>>> GetManaged([FromRoute] long id)
         {
-            return Ok();
+            var employee = await GetCurrentEmployeeAsync();
+            if (employee is null)
+            {
+                return Unauthorized(new ApiResponse("Employee not found"));
+            }
+
+            var application = _uow.JobApplications.GetByIdWithDetails(id);
+            if (application is null)
+            {
+                return NotFound(new ApiResponse("Job application not found"));
+            }
+            if (!application.IsManaged)
+            {
+                return Conflict(new ApiResponse("This job application is not managed"));
+            }
+            if (application.EmployeeId != employee.Id)
+            {
+                return Unauthorized(new ApiResponse("Another employee is managing this job application"));
+            }
+
+            return Ok(new ApiResponse<JobApplicationEmployeeDto>("Job application retrieved", ToDto(application)));
         }
 
         [HttpPut("managed/{id}")]
-        public ActionResult<ApiResponse> UpdateStatus([FromRoute] long id, [FromBody] UpdateJobApplicationStatusRequest request)
+        public async Task<ActionResult<ApiResponse>> UpdateStatus([FromRoute] long id, [FromBody] UpdateJobApplicationStatusRequest request)
         {
-            return Ok();
+            var validationResult = await _updateValidator.ValidateAsync(request);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new ApiResponse(string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage))));
+            }
+
+            if (request.Status == JobApplicationStatus.InterviewScheduled)
+            {
+                return Conflict(new ApiResponse("Manually setting status to InterviewScheduled is not allowed"));
+            }
+
+            var employee = await GetCurrentEmployeeAsync();
+            if (employee is null)
+            {
+                return Unauthorized(new ApiResponse("Employee not found"));
+            }
+
+            var application = _uow.JobApplications.GetByIdWithDetails(id);
+            if (application is null)
+            {
+                return NotFound(new ApiResponse("Job application not found"));
+            }
+            if (!application.IsManaged)
+            {
+                return Conflict(new ApiResponse("This job application is not managed"));
+            }
+            if (application.EmployeeId != employee.Id)
+            {
+                return Unauthorized(new ApiResponse("Another employee is managing this job application"));
+            }
+            if (application.Status == JobApplicationStatus.Accepted)
+            {
+                return Conflict(new ApiResponse("You cannot edit this application's status"));
+            }
+            if (!JobApplicationStatusUtil.IsStatusChangeAllowed(application.Status, request.Status))
+            {
+                return Conflict(new ApiResponse("Status change not allowed"));
+            }
+
+            application.Status = request.Status;
+            _uow.JobApplications.Update(application);
+            await _uow.SaveChangesAsync();
+
+            return Ok(new ApiResponse("Job application status updated"));
         }
 
         [HttpGet("managed/{id}/candidate/profile")]
-        public ActionResult<ApiResponse<CandidateDto>> GetCandidateProfileForJobApplication([FromRoute] long id)
+        public async Task<ActionResult<ApiResponse<CandidateDto>>> GetCandidateProfileForJobApplication([FromRoute] long id)
         {
-            return Ok();
+            var employee = await GetCurrentEmployeeAsync();
+            if (employee is null)
+            {
+                return Unauthorized(new ApiResponse("Employee not found"));
+            }
+
+            var application = _uow.JobApplications.GetByIdWithDetails(id);
+            if (application is null)
+            {
+                return NotFound(new ApiResponse("Job application not found"));
+            }
+            if (!application.IsManaged)
+            {
+                return Conflict(new ApiResponse("This job application is not managed"));
+            }
+            if (application.EmployeeId != employee.Id)
+            {
+                return Unauthorized(new ApiResponse("Another employee is managing this job application"));
+            }
+
+            var candidate = _uow.Candidates.Find(c => c.Id == application.CandidateId).FirstOrDefault();
+            if (candidate is null)
+            {
+                return NotFound(new ApiResponse("Candidate not found"));
+            }
+
+            var appUser = await _userManager.FindByIdAsync(candidate.AppUserId);
+            if (appUser is null)
+            {
+                return NotFound(new ApiResponse("Candidate not found"));
+            }
+
+            var dto = new CandidateDto
+            {
+                Id = candidate.Id,
+                FirstName = candidate.FirstName,
+                LastName = candidate.LastName,
+                Sex = candidate.Sex,
+                Address = candidate.Address,
+                Email = appUser.Email ?? string.Empty,
+                Phone = appUser.PhoneNumber ?? string.Empty,
+            };
+
+            return Ok(new ApiResponse<CandidateDto>("Candidate profile retrieved", dto));
         }
 
         [HttpGet("managed/{id}/candidate/resume")]
-        public async Task<FileResult> GetCandidateResumeForJobApplication([FromRoute] long id)
+        public async Task<IActionResult> GetCandidateResumeForJobApplication([FromRoute] long id)
         {
-            return File(Array.Empty<byte>(), "application/pdf", "resume.pdf");
+            var employee = await GetCurrentEmployeeAsync();
+            if (employee is null)
+            {
+                return Unauthorized(new ApiResponse("Employee not found"));
+            }
+
+            var application = _uow.JobApplications.GetByIdWithDetails(id);
+            if (application is null)
+            {
+                return NotFound(new ApiResponse("Job application not found"));
+            }
+            if (!application.IsManaged)
+            {
+                return Conflict(new ApiResponse("This job application is not managed"));
+            }
+            if (application.EmployeeId != employee.Id)
+            {
+                return Unauthorized(new ApiResponse("Another employee is managing this job application"));
+            }
+
+            var candidate = _uow.Candidates.Find(c => c.Id == application.CandidateId).FirstOrDefault();
+            if (candidate is null || candidate.Resume is null || candidate.Resume.Length == 0)
+            {
+                return NotFound(new ApiResponse("Resume not uploaded"));
+            }
+
+            return File(candidate.Resume, "application/pdf", "resume.pdf");
+        }
+
+        private static JobApplicationEmployeeDto ToDto(JobApplication application) => new()
+        {
+            Id = application.Id,
+            DateSubmitted = application.DateSubmitted,
+            Status = application.Status,
+            JobPosting = new JobPostingDto
+            {
+                Id = application.JobPosting.Id,
+                Title = application.JobPosting.Title,
+                Description = application.JobPosting.Description,
+                DatePublished = application.JobPosting.DatePublished,
+                DateExpires = application.JobPosting.DateExpires,
+                IsClosed = application.JobPosting.IsClosed,
+                CompanyName = application.JobPosting.Company?.Name ?? string.Empty,
+            },
+            CandidateId = application.CandidateId,
+        };
+
+        private async Task<Employee?> GetCurrentEmployeeAsync()
+        {
+            var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return appUserId is null ? null : await _uow.Employees.GetByAppUserIdAsync(appUserId);
         }
     }
 }
