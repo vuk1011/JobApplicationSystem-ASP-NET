@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using Domain.Repositories;
+using FluentValidation;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.JobPostings;
 using Microsoft.AspNetCore.Authorization;
@@ -11,11 +12,14 @@ namespace JobApplicationAPI.Controllers.Employees
     [Authorize(Roles = "Employee")]
     public class JobPostingsController : ControllerBase
     {
+        private readonly IUnitOfWork _uow;
+
         private readonly IValidator<CreateJobPostingRequest> _createValidator;
         private readonly IValidator<UpdateJobPostingRequest> _updateValidator;
 
-        public JobPostingsController(IValidator<CreateJobPostingRequest> createValidator, IValidator<UpdateJobPostingRequest> updateValidator)
+        public JobPostingsController(IUnitOfWork uow, IValidator<CreateJobPostingRequest> createValidator, IValidator<UpdateJobPostingRequest> updateValidator)
         {
+            _uow = uow;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
         }

@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using Domain.Repositories;
+using FluentValidation;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Offers;
 using Microsoft.AspNetCore.Authorization;
@@ -11,10 +12,13 @@ namespace JobApplicationAPI.Controllers.Employees
     [Authorize(Roles = "Employee")]
     public class OffersController : ControllerBase
     {
+        private readonly IUnitOfWork _uow;
+
         private readonly IValidator<CreateOfferRequest> _createValidator;
 
-        public OffersController(IValidator<CreateOfferRequest> createValidator)
+        public OffersController(IUnitOfWork uow, IValidator<CreateOfferRequest> createValidator)
         {
+            _uow = uow;
             _createValidator = createValidator;
         }
 

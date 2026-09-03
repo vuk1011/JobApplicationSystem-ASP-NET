@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using Domain.Repositories;
+using FluentValidation;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.JobApplications;
 using JobApplicationAPI.DTOs.Users;
@@ -12,11 +13,14 @@ namespace JobApplicationAPI.Controllers.Employees
     [Authorize(Roles = "Employee")]
     public class JobApplicationsController : ControllerBase
     {
+        private readonly IUnitOfWork _uow;
+
         private readonly IValidator<ManageJobApplicationRequest> _manageValidator;
         private readonly IValidator<UpdateJobApplicationStatusRequest> _updateValidator;
 
-        public JobApplicationsController(IValidator<ManageJobApplicationRequest> manageValidator, IValidator<UpdateJobApplicationStatusRequest> updateValidator)
+        public JobApplicationsController(IUnitOfWork uow, IValidator<ManageJobApplicationRequest> manageValidator, IValidator<UpdateJobApplicationStatusRequest> updateValidator)
         {
+            _uow = uow;
             _manageValidator = manageValidator;
             _updateValidator = updateValidator;
         }

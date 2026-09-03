@@ -16,9 +16,11 @@ namespace JobApplicationAPI.Controllers.Employees
     [AllowAnonymous]
     public class AuthController : ControllerBase
     {
+        private readonly IUnitOfWork _uow;
+
         private readonly UserManager<AppUser> _userManager;
         private readonly JwtService _jwtService;
-        private readonly IUnitOfWork _uow;
+
         private readonly IValidator<LoginRequest> _loginValidator;
         private readonly IValidator<RegisterEmployeeRequest> _registerValidator;
 

@@ -1,4 +1,5 @@
-﻿using JobApplicationAPI.DTOs;
+﻿using Domain.Repositories;
+using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Interviews;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,9 +11,11 @@ namespace JobApplicationAPI.Controllers.Candidates
     [Authorize(Roles = "Candidate")]
     public class InterviewsController : ControllerBase
     {
-        public InterviewsController()
-        {
+        private readonly IUnitOfWork _uow;
 
+        public InterviewsController(IUnitOfWork uow)
+        {
+            _uow = uow;
         }
 
         [HttpGet]
