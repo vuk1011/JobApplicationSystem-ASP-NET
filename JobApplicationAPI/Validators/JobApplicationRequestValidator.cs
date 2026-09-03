@@ -7,7 +7,8 @@ namespace JobApplicationAPI.Validators
     {
         public UpdateJobApplicationStatusRequestValidator()
         {
-
+            RuleFor(x => x.Status)
+                .IsInEnum().WithMessage("Status is required");
         }
     }
 
@@ -15,7 +16,8 @@ namespace JobApplicationAPI.Validators
     {
         public SubmitJobApplicationRequestValidator()
         {
-
+            RuleFor(x => x.JobPostingId)
+                .GreaterThan(0).WithMessage("Job posting is required");
         }
     }
 
@@ -23,7 +25,8 @@ namespace JobApplicationAPI.Validators
     {
         public ManageJobApplicationRequestValidator()
         {
-
+            RuleFor(x => x.JobApplicationId)
+                .GreaterThan(0).WithMessage("Job application is required");
         }
     }
 }

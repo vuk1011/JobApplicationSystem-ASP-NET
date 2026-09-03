@@ -7,7 +7,12 @@ namespace JobApplicationAPI.Validators
     {
         public CreateOfferRequestValidator()
         {
+            RuleFor(x => x.Name)
+                .NotEmpty().WithMessage("Name is required")
+                .MaximumLength(50).WithMessage("Name must be at most 50 characters");
 
+            RuleFor(x => x.JobApplicationId)
+                .GreaterThan(0).WithMessage("Job application is required");
         }
     }
 
