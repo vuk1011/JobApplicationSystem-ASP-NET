@@ -31,8 +31,9 @@ namespace JobApplicationAPI.Controllers.Candidates
             Id = jobPosting.Id,
             Title = jobPosting.Title,
             Description = jobPosting.Description,
-            DatePublished = jobPosting.DatePublished,
-            DateExpires = jobPosting.DateExpires,
+            DateOfPublishing = jobPosting.DateOfPublishing,
+            DateOfExpiration = jobPosting.DateOfExpiration,
+            Status = jobPosting.Status,
             IsClosed = jobPosting.IsClosed,
             CompanyName = jobPosting.Company?.Name ?? string.Empty,
         };

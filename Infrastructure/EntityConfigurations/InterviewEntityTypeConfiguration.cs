@@ -19,7 +19,7 @@ namespace Infrastructure.EntityConfigurations
                 .HasMaxLength(200);
 
             builder
-                .Property(e => e.DateTimeScheduled)
+                .Property(e => e.TimeScheduled)
                 .IsRequired();
         }
     }

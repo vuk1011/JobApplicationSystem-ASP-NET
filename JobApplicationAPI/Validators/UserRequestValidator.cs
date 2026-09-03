@@ -88,10 +88,10 @@ namespace JobApplicationAPI.Validators
                 .NotEmpty().WithMessage("National ID is required")
                 .Length(10, 20).WithMessage("National ID must be between 10 and 20 characters");
 
-            RuleFor(x => x.DateBorn)
+            RuleFor(x => x.DateOfBirth)
                 .LessThan(DateOnly.FromDateTime(DateTime.Today)).WithMessage("Date of birth must be in the past");
 
-            RuleFor(x => x.DateHired)
+            RuleFor(x => x.DateOfHire)
                 .LessThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today)).WithMessage("Date of hiring must be in the past or present");
 
             RuleFor(x => x.CompanyId)

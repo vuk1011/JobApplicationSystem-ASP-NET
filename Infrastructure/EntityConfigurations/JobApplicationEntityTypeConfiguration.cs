@@ -9,7 +9,7 @@ namespace Infrastructure.EntityConfigurations
         public void Configure(EntityTypeBuilder<JobApplication> builder)
         {
             builder
-                .Property(e => e.DateSubmitted)
+                .Property(e => e.DateOfSubmission)
                 .IsRequired();
 
             builder

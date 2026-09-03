@@ -15,7 +15,7 @@ namespace JobApplicationAPI.Validators
                 .NotEmpty().WithMessage("Description is required")
                 .MaximumLength(3000).WithMessage("Description must be at most 3000 characters");
 
-            RuleFor(x => x.DateExpires)
+            RuleFor(x => x.DateOfExpiration)
                 .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today)).WithMessage("Date of expiration must be in the present or future");
         }
     }
@@ -32,7 +32,7 @@ namespace JobApplicationAPI.Validators
                 .NotEmpty().WithMessage("Description is required")
                 .MaximumLength(3000).WithMessage("Description must be at most 3000 characters");
 
-            RuleFor(x => x.DateExpires)
+            RuleFor(x => x.DateOfExpiration)
                 .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today)).WithMessage("Date of expiration must be in the present or future");
         }
     }

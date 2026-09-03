@@ -40,7 +40,7 @@ namespace JobApplicationAPI.Controllers.Candidates
             }
 
             var interviews = _uow.Interviews.GetByJobApplicationId(jobApplicationId)
-                .Select(i => new InterviewDto { Id = i.Id, Title = i.Title, Description = i.Description, DateTimeScheduled = i.DateTimeScheduled })
+                .Select(i => new InterviewDto { Id = i.Id, Title = i.Title, Description = i.Description, TimeScheduled = i.TimeScheduled })
                 .ToList();
 
             return Ok(new ApiResponse<List<InterviewDto>>("Successfully retrieved interviews for job application", interviews));

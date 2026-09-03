@@ -19,15 +19,16 @@ namespace Infrastructure.EntityConfigurations
                 .HasMaxLength(3000);
 
             builder
-                .Property(e => e.DatePublished)
+                .Property(e => e.DateOfPublishing)
                 .IsRequired();
 
             builder
-                .Property(e => e.DateExpires)
+                .Property(e => e.DateOfExpiration)
                 .IsRequired();
 
             builder
-                .Ignore(e => e.IsClosed);
+                .Ignore(e => e.IsClosed)
+                .Ignore(e => e.Status);
         }
     }
 }

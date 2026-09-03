@@ -3,7 +3,7 @@
     public class JobApplication
     {
         public long Id { get; set; }
-        public DateOnly DateSubmitted { get; set; }
+        public DateOnly DateOfSubmission { get; set; }
         public JobApplicationStatus Status { get; set; }
         public long JobPostingId { get; set; }
         public JobPosting JobPosting { get; set; } = null!;

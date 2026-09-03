@@ -56,8 +56,8 @@ namespace JobApplicationAPI.Data
                         Sex = Sex.Female,
                         Address = "Sarajevska 1",
                         NationalId = "0101988700001",
-                        DateBorn = new DateOnly(1990, 1, 1),
-                        DateHired = new DateOnly(2020, 1, 1),
+                        DateOfBirth = new DateOnly(1990, 1, 1),
+                        DateOfHire = new DateOnly(2020, 1, 1),
                         CompanyId = company.Id,
                     });
                     await uow.SaveChangesAsync();

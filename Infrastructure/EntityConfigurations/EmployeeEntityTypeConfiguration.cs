@@ -42,11 +42,11 @@ namespace Infrastructure.EntityConfigurations
                 .HasMaxLength(20);
 
             builder
-                .Property(e => e.DateBorn)
+                .Property(e => e.DateOfBirth)
                 .IsRequired();
 
             builder
-                .Property(e => e.DateHired)
+                .Property(e => e.DateOfHire)
                 .IsRequired();
 
             builder

@@ -52,6 +52,8 @@ namespace JobApplicationAPI.Controllers.Employees
         [HttpPost]
         public async Task<ActionResult<ApiResponse<JobPostingDto>>> Create([FromBody] CreateJobPostingRequest request)
         {
+            Console.WriteLine(request.DateOfExpiration);
+
             var validationResult = await _createValidator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
@@ -64,7 +66,7 @@ namespace JobApplicationAPI.Controllers.Employees
                 return Unauthorized(new ApiResponse("Employee not found"));
             }
 
-            if (request.DateExpires < DateOnly.FromDateTime(DateTime.Today))
+            if (request.DateOfExpiration < DateOnly.FromDateTime(DateTime.Today))
             {
                 return Conflict(new ApiResponse("Invalid date of expiration"));
             }
@@ -123,14 +125,14 @@ namespace JobApplicationAPI.Controllers.Employees
             {
                 return Unauthorized(new ApiResponse("This job posting does not belong to your company"));
             }
-            if (request.DateExpires < DateOnly.FromDateTime(DateTime.Today))
+            if (request.DateOfExpiration < DateOnly.FromDateTime(DateTime.Today))
             {
                 return Conflict(new ApiResponse("Expiration date cannot be set before current time"));
             }
 
             jobPosting.Title = request.Title;
             jobPosting.Description = request.Description;
-            jobPosting.DateExpires = request.DateExpires;
+            jobPosting.DateOfExpiration = request.DateOfExpiration;
             _uow.JobPostings.Update(jobPosting);
             await _uow.SaveChangesAsync();
 
@@ -208,7 +210,7 @@ namespace JobApplicationAPI.Controllers.Employees
             var imported = new List<JobPostingDto>();
             foreach (var request in requests ?? [])
             {
-                if (request.DateExpires < DateOnly.FromDateTime(DateTime.Today))
+                if (request.DateOfExpiration < DateOnly.FromDateTime(DateTime.Today))
                 {
                     return Conflict(new ApiResponse("Invalid date of expiration"));
                 }
@@ -228,8 +230,8 @@ namespace JobApplicationAPI.Controllers.Employees
         {
             Title = request.Title,
             Description = request.Description,
-            DatePublished = DateOnly.FromDateTime(DateTime.Today),
-            DateExpires = request.DateExpires,
+            DateOfPublishing = DateOnly.FromDateTime(DateTime.Today),
+            DateOfExpiration = request.DateOfExpiration,
             CompanyId = companyId,
         };
 
@@ -238,8 +240,9 @@ namespace JobApplicationAPI.Controllers.Employees
             Id = jobPosting.Id,
             Title = jobPosting.Title,
             Description = jobPosting.Description,
-            DatePublished = jobPosting.DatePublished,
-            DateExpires = jobPosting.DateExpires,
+            DateOfPublishing = jobPosting.DateOfPublishing,
+            DateOfExpiration = jobPosting.DateOfExpiration,
+            Status = jobPosting.Status,
             IsClosed = jobPosting.IsClosed,
             CompanyName = jobPosting.Company?.Name ?? string.Empty,
         };

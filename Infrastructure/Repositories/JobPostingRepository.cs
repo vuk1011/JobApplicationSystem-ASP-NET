@@ -15,7 +15,7 @@ namespace Infrastructure.Repositories
 
         public IEnumerable<JobPosting> GetAllPublished() =>
             DbSet.Include(e => e.Company)
-                 .Where(e => e.DateExpires >= DateOnly.FromDateTime(DateTime.Today))
+                 .Where(e => e.DateOfExpiration >= DateOnly.FromDateTime(DateTime.Today))
                  .ToList();
 
         public JobPosting? GetByIdWithCompany(long id) =>

@@ -12,8 +12,8 @@ namespace JobApplicationAPI.DTOs.Users
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string NationalId { get; set; } = string.Empty;
-        public DateOnly DateBorn { get; set; }
-        public DateOnly DateHired { get; set; }
+        public DateOnly DateOfBirth { get; set; }
+        public DateOnly DateOfHire { get; set; }
         public long CompanyId { get; set; }
     }
 }

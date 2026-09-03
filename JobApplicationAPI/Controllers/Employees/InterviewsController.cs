@@ -48,7 +48,7 @@ namespace JobApplicationAPI.Controllers.Employees
             }
 
             var interviews = _uow.Interviews.GetByJobApplicationId(jobApplicationId)
-                .Select(i => new InterviewDto { Id = i.Id, Title = i.Title, Description = i.Description, DateTimeScheduled = i.DateTimeScheduled })
+                .Select(i => new InterviewDto { Id = i.Id, Title = i.Title, Description = i.Description, TimeScheduled = i.TimeScheduled })
                 .ToList();
 
             return Ok(new ApiResponse<List<InterviewDto>>("Interviews retrieved", interviews));
@@ -94,7 +94,7 @@ namespace JobApplicationAPI.Controllers.Employees
             {
                 Title = request.Title,
                 Description = request.Description,
-                DateTimeScheduled = request.DateTimeScheduled,
+                TimeScheduled = request.TimeScheduled,
                 JobApplicationId = request.JobApplicationId,
             };
             _uow.Interviews.Add(interview);
@@ -121,7 +121,7 @@ namespace JobApplicationAPI.Controllers.Employees
             {
                 return Unauthorized(new ApiResponse("Another employee is managing the associated job application for the interview"));
             }
-            if (interview.DateTimeScheduled < DateTime.Now)
+            if (interview.TimeScheduled < DateTime.Now)
             {
                 return Conflict(new ApiResponse("Interview cannot be deleted after it took place"));
             }

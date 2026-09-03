@@ -58,7 +58,7 @@ namespace JobApplicationAPI.Controllers.Candidates
 
             var application = new JobApplication
             {
-                DateSubmitted = DateOnly.FromDateTime(DateTime.Today),
+                DateOfSubmission = DateOnly.FromDateTime(DateTime.Today),
                 Status = JobApplicationStatus.Submitted,
                 JobPostingId = jobPosting.Id,
                 CandidateId = candidate.Id,
@@ -129,15 +129,16 @@ namespace JobApplicationAPI.Controllers.Candidates
         private static JobApplicationCandidateDto ToDto(JobApplication application) => new()
         {
             Id = application.Id,
-            DateSubmitted = application.DateSubmitted,
+            DateOfSubmission = application.DateOfSubmission,
             Status = application.Status,
             JobPosting = new JobPostingDto
             {
                 Id = application.JobPosting.Id,
                 Title = application.JobPosting.Title,
                 Description = application.JobPosting.Description,
-                DatePublished = application.JobPosting.DatePublished,
-                DateExpires = application.JobPosting.DateExpires,
+                DateOfPublishing = application.JobPosting.DateOfPublishing,
+                DateOfExpiration = application.JobPosting.DateOfExpiration,
+                Status = application.JobPosting.Status,
                 IsClosed = application.JobPosting.IsClosed,
                 CompanyName = application.JobPosting.Company?.Name ?? string.Empty,
             },

@@ -100,8 +100,8 @@ namespace JobApplicationAPI.Controllers.Employees
                 Sex = request.Sex,
                 Address = request.Address,
                 NationalId = request.NationalId,
-                DateBorn = request.DateBorn,
-                DateHired = request.DateHired,
+                DateOfBirth = request.DateOfBirth,
+                DateOfHire = request.DateOfHire,
                 CompanyId = request.CompanyId,
             };
             _uow.Employees.Add(employee);

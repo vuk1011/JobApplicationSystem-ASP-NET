@@ -15,7 +15,7 @@ namespace JobApplicationAPI.Validators
                 .NotEmpty().WithMessage("Description is required")
                 .MaximumLength(200).WithMessage("Description must be at most 200 characters");
 
-            RuleFor(x => x.DateTimeScheduled)
+            RuleFor(x => x.TimeScheduled)
                 .GreaterThan(DateTime.Now).WithMessage("Time scheduled must be in the future");
 
             RuleFor(x => x.JobApplicationId)
