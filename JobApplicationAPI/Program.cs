@@ -2,6 +2,7 @@ using Domain.Repositories;
 using FluentValidation;
 using Infrastructure;
 using Infrastructure.Identity;
+using JobApplicationAPI.Data;
 using JobApplicationAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -95,6 +96,11 @@ using (var scope = app.Services.CreateScope())
         {
             await roleManager.CreateAsync(new IdentityRole(roleName));
         }
+    }
+
+    if (app.Environment.IsDevelopment())
+    {
+        await DbSeeder.SeedAsync(scope.ServiceProvider);
     }
 }
 
