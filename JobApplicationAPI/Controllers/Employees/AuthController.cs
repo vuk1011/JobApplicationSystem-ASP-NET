@@ -1,15 +1,24 @@
-﻿using JobApplicationAPI.DTOs.Users;
+﻿using Infrastructure.Identity;
+using JobApplicationAPI.DTOs.Users;
+using JobApplicationAPI.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JobApplicationAPI.Controllers.Employees
 {
-    [Route("api/employees/auth")]
     [ApiController]
+    [Route("api/employees/auth")]
+    [AllowAnonymous]
     public class AuthController : ControllerBase
     {
-        public AuthController()
-        {
+        private readonly UserManager<AppUser> userManager;
+        private readonly JwtService jwtService;
 
+        public AuthController(UserManager<AppUser> userManager, JwtService jwtService)
+        {
+            this.userManager = userManager;
+            this.jwtService = jwtService;
         }
 
         [HttpPost("login")]

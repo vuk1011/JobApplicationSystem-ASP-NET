@@ -1,11 +1,13 @@
 ﻿using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.JobPostings;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JobApplicationAPI.Controllers.Employees
 {
-    [Route("api/employees/job-postings")]
     [ApiController]
+    [Route("api/employees/job-postings")]
+    [Authorize(Roles = "Employee")]
     public class JobPostingsController : ControllerBase
     {
         public JobPostingsController()

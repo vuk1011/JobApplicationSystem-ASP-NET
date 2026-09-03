@@ -1,11 +1,13 @@
 ﻿using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Interviews;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JobApplicationAPI.Controllers.Employees
 {
-    [Route("api/employees/interviews")]
     [ApiController]
+    [Route("api/employees/interviews")]
+    [Authorize(Roles = "Employee")]
     public class InterviewsController : ControllerBase
     {
         public InterviewsController()

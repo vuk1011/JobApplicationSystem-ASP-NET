@@ -1,11 +1,13 @@
 ﻿using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Offers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JobApplicationAPI.Controllers.Candidates
 {
-    [Route("api/candidates/offers")]
     [ApiController]
+    [Route("api/candidates/offers")]
+    [Authorize(Roles = "Candidate")]
     public class OffersController : ControllerBase
     {
         public OffersController()
