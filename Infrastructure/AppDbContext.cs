@@ -37,6 +37,12 @@ namespace Infrastructure
                 passkey.ComplexProperty(p => p.Data);
             });
 
+            modelBuilder.Entity<AppUser>()
+                .Property(u => u.UserType)
+                .IsRequired()
+                .HasConversion<string>()
+                .HasMaxLength(10);
+
             new CandidateEntityTypeConfiguration().Configure(modelBuilder.Entity<Candidate>());
             new EmployeeEntityTypeConfiguration().Configure(modelBuilder.Entity<Employee>());
             new JobPostingEntityTypeConfiguration().Configure(modelBuilder.Entity<JobPosting>());

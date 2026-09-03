@@ -7,5 +7,6 @@ namespace Domain.Repositories
 {
     public interface ICandidateRepository : IRepository<Candidate>
     {
+        Task<Candidate?> GetByAppUserIdAsync(string appUserId);
     }
 }

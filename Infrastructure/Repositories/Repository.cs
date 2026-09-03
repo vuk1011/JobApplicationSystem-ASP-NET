@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace Infrastructure.Repositories
@@ -16,5 +17,18 @@ namespace Infrastructure.Repositories
             Context = context;
             DbSet = context.Set<T>();
         }
+
+        public Task<List<T>> GetAllAsync() => DbSet.ToListAsync();
+
+        public Task<List<T>> FindAsync(Expression<Func<T, bool>> predicate) =>
+            DbSet.Where(predicate).ToListAsync();
+
+        public ValueTask<T?> GetByIdAsync(params object[] keyValues) => DbSet.FindAsync(keyValues);
+
+        public void Add(T entity) => DbSet.Add(entity);
+
+        public void Remove(T entity) => DbSet.Remove(entity);
+
+        public void Update(T entity) => DbSet.Update(entity);
     }
 }

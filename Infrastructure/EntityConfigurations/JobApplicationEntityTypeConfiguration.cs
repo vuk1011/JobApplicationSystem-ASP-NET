@@ -14,7 +14,9 @@ namespace Infrastructure.EntityConfigurations
 
             builder
                 .Property(e => e.Status)
-                .IsRequired();
+                .IsRequired()
+                .HasConversion<string>()
+                .HasMaxLength(20);
 
             builder
                 .HasMany(e => e.Offers)

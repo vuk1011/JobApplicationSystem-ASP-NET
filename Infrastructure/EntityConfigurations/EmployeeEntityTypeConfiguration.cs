@@ -27,7 +27,9 @@ namespace Infrastructure.EntityConfigurations
 
             builder
                 .Property(e => e.Sex)
-                .IsRequired();
+                .IsRequired()
+                .HasConversion<string>()
+                .HasMaxLength(10);
 
             builder
                 .Property(e => e.Address)

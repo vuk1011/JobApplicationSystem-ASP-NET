@@ -7,5 +7,6 @@ namespace Domain.Repositories
 {
     public interface IEmployeeRepository : IRepository<Employee>
     {
+        Task<Employee?> GetByAppUserIdAsync(string appUserId);
     }
 }
