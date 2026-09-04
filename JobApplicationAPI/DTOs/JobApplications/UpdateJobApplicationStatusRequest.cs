@@ -2,8 +2,8 @@
 
 namespace JobApplicationAPI.DTOs.JobApplications
 {
-    public class UpdateJobApplicationStatusRequest
+    public record UpdateJobApplicationStatusRequest
     {
-        public JobApplicationStatus Status { get; set; }
+        public JobApplicationStatus Status { get; init; }
     }
 }

@@ -1,7 +1,7 @@
 ﻿namespace JobApplicationAPI.DTOs.JobApplications
 {
-    public class ManageJobApplicationRequest
+    public record ManageJobApplicationRequest
     {
-        public long ApplicationId { get; set; }
+        public long ApplicationId { get; init; }
     }
 }

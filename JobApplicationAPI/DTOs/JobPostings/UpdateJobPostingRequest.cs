@@ -1,9 +1,9 @@
 ﻿namespace JobApplicationAPI.DTOs.JobPostings
 {
-    public class UpdateJobPostingRequest
+    public record UpdateJobPostingRequest
     {
-        public string Title { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public DateOnly DateOfExpiration { get; set; }
+        public string Title { get; init; } = string.Empty;
+        public string Description { get; init; } = string.Empty;
+        public DateOnly DateOfExpiration { get; init; }
     }
 }

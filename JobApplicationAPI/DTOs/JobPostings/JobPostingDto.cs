@@ -2,15 +2,15 @@
 
 namespace JobApplicationAPI.DTOs.JobPostings
 {
-    public class JobPostingDto
+    public record JobPostingDto
     {
-        public long Id { get; set; }
-        public string Title { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public DateOnly DateOfPublishing { get; set; }
-        public DateOnly DateOfExpiration { get; set; }
-        public JobPostingStatus Status { get; set; }
-        public bool IsClosed { get; set; }
-        public string CompanyName { get; set; } = string.Empty;
+        public long Id { get; init; }
+        public string Title { get; init; } = string.Empty;
+        public string Description { get; init; } = string.Empty;
+        public DateOnly DateOfPublishing { get; init; }
+        public DateOnly DateOfExpiration { get; init; }
+        public JobPostingStatus Status { get; init; }
+        public bool IsClosed { get; init; }
+        public string CompanyName { get; init; } = string.Empty;
     }
 }

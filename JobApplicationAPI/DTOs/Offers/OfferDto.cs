@@ -1,9 +1,9 @@
 ﻿namespace JobApplicationAPI.DTOs.Offers
 {
-    public class OfferDto
+    public record OfferDto
     {
-        public long Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public bool? Accepted { get; set; }
+        public long Id { get; init; }
+        public string Name { get; init; } = string.Empty;
+        public bool? Accepted { get; init; }
     }
 }

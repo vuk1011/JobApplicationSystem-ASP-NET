@@ -1,7 +1,7 @@
 ﻿namespace JobApplicationAPI.DTOs.Offers
 {
-    public class UpdateOfferRequest
+    public record UpdateOfferRequest
     {
-        public bool Accepted { get; set; }
+        public bool Accepted { get; init; }
     }
 }

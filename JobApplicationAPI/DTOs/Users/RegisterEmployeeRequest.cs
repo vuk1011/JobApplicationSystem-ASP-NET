@@ -2,18 +2,18 @@
 
 namespace JobApplicationAPI.DTOs.Users
 {
-    public class RegisterEmployeeRequest
+    public record RegisterEmployeeRequest
     {
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
-        public Sex Sex { get; set; }
-        public string Phone { get; set; } = string.Empty;
-        public string Address { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public string NationalId { get; set; } = string.Empty;
-        public DateOnly DateOfBirth { get; set; }
-        public DateOnly DateOfHire { get; set; }
-        public long CompanyId { get; set; }
+        public string FirstName { get; init; } = string.Empty;
+        public string LastName { get; init; } = string.Empty;
+        public Sex Sex { get; init; }
+        public string Phone { get; init; } = string.Empty;
+        public string Address { get; init; } = string.Empty;
+        public string Email { get; init; } = string.Empty;
+        public string Password { get; init; } = string.Empty;
+        public string NationalId { get; init; } = string.Empty;
+        public DateOnly DateOfBirth { get; init; }
+        public DateOnly DateOfHire { get; init; }
+        public long CompanyId { get; init; }
     }
 }

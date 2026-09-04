@@ -3,20 +3,20 @@ using JobApplicationAPI.DTOs.JobPostings;
 
 namespace JobApplicationAPI.DTOs.JobApplications
 {
-    public class JobApplicationCandidateDto
+    public record JobApplicationCandidateDto
     {
-        public long Id { get; set; }
-        public DateOnly DateOfSubmission { get; set; }
-        public JobApplicationStatus Status { get; set; }
-        public JobPostingDto JobPosting { get; set; }
+        public long Id { get; init; }
+        public DateOnly DateOfSubmission { get; init; }
+        public JobApplicationStatus Status { get; init; }
+        public JobPostingDto JobPosting { get; init; } = null!;
     }
 
-    public class JobApplicationEmployeeDto
+    public record JobApplicationEmployeeDto
     {
-        public long Id { get; set; }
-        public DateOnly DateOfSubmission { get; set; }
-        public JobApplicationStatus Status { get; set; }
-        public JobPostingDto JobPosting { get; set; }
-        public long CandidateId { get; set; }
+        public long Id { get; init; }
+        public DateOnly DateOfSubmission { get; init; }
+        public JobApplicationStatus Status { get; init; }
+        public JobPostingDto JobPosting { get; init; } = null!;
+        public long CandidateId { get; init; }
     }
 }

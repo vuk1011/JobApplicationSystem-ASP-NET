@@ -1,7 +1,7 @@
 ﻿namespace JobApplicationAPI.DTOs.JobApplications
 {
-    public class SubmitJobApplicationRequest
+    public record SubmitJobApplicationRequest
     {
-        public long JobPostingId { get; set; }
+        public long JobPostingId { get; init; }
     }
 }
