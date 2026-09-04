@@ -3,9 +3,9 @@ using Domain.Repositories;
 using FluentValidation;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Offers;
+using JobApplicationAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace JobApplicationAPI.Controllers.Employees
 {
@@ -18,16 +18,19 @@ namespace JobApplicationAPI.Controllers.Employees
 
         private readonly IValidator<CreateOfferRequest> _createValidator;
 
-        public OffersController(IUnitOfWork uow, IValidator<CreateOfferRequest> createValidator)
+        private readonly CurrentUserService _currentUser;
+
+        public OffersController(IUnitOfWork uow, IValidator<CreateOfferRequest> createValidator, CurrentUserService currentUser)
         {
             _uow = uow;
             _createValidator = createValidator;
+            _currentUser = currentUser;
         }
 
         [HttpGet]
         public async Task<ActionResult<ApiResponse<List<OfferDto>>>> GetAll([FromQuery] long jobApplicationId)
         {
-            var employee = await GetCurrentEmployeeAsync();
+            var employee = await _currentUser.GetCurrentAsync<Employee>();
             if (employee is null)
             {
                 return Unauthorized(new ApiResponse("Employee not found"));
@@ -63,7 +66,7 @@ namespace JobApplicationAPI.Controllers.Employees
                 return BadRequest(new ApiResponse(string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage))));
             }
 
-            var employee = await GetCurrentEmployeeAsync();
+            var employee = await _currentUser.GetCurrentAsync<Employee>();
             if (employee is null)
             {
                 return Unauthorized(new ApiResponse("Employee not found"));
@@ -104,7 +107,7 @@ namespace JobApplicationAPI.Controllers.Employees
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse>> Delete([FromRoute] long id)
         {
-            var employee = await GetCurrentEmployeeAsync();
+            var employee = await _currentUser.GetCurrentAsync<Employee>();
             if (employee is null)
             {
                 return Unauthorized(new ApiResponse("Employee not found"));
@@ -128,12 +131,6 @@ namespace JobApplicationAPI.Controllers.Employees
             await _uow.SaveChangesAsync();
 
             return Ok(new ApiResponse("Offer deleted"));
-        }
-
-        private async Task<Employee?> GetCurrentEmployeeAsync()
-        {
-            var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return appUserId is null ? null : await _uow.Employees.GetByAppUserIdAsync(appUserId);
         }
     }
 }

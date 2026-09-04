@@ -4,9 +4,9 @@ using FluentValidation;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.JobApplications;
 using JobApplicationAPI.DTOs.JobPostings;
+using JobApplicationAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace JobApplicationAPI.Controllers.Candidates
 {
@@ -19,10 +19,13 @@ namespace JobApplicationAPI.Controllers.Candidates
 
         private readonly IValidator<SubmitJobApplicationRequest> _submitValidator;
 
-        public JobApplicationsController(IUnitOfWork uow, IValidator<SubmitJobApplicationRequest> submitValidator)
+        private readonly CurrentUserService _currentUser;
+
+        public JobApplicationsController(IUnitOfWork uow, IValidator<SubmitJobApplicationRequest> submitValidator, CurrentUserService currentUser)
         {
             _uow = uow;
             _submitValidator = submitValidator;
+            _currentUser = currentUser;
         }
 
         [HttpPost]
@@ -34,7 +37,7 @@ namespace JobApplicationAPI.Controllers.Candidates
                 return BadRequest(new ApiResponse(string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage))));
             }
 
-            var candidate = await GetCurrentCandidateAsync();
+            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
             if (candidate is null)
             {
                 return Unauthorized(new ApiResponse("Candidate not found"));
@@ -72,7 +75,7 @@ namespace JobApplicationAPI.Controllers.Candidates
         [HttpGet]
         public async Task<ActionResult<ApiResponse<List<JobApplicationCandidateDto>>>> GetAll()
         {
-            var candidate = await GetCurrentCandidateAsync();
+            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
             if (candidate is null)
             {
                 return Unauthorized(new ApiResponse("Candidate not found"));
@@ -85,7 +88,7 @@ namespace JobApplicationAPI.Controllers.Candidates
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<JobApplicationCandidateDto>>> Get([FromRoute] long id)
         {
-            var candidate = await GetCurrentCandidateAsync();
+            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
             if (candidate is null)
             {
                 return Unauthorized(new ApiResponse("Candidate not found"));
@@ -103,7 +106,7 @@ namespace JobApplicationAPI.Controllers.Candidates
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse>> Withdraw([FromRoute] long id)
         {
-            var candidate = await GetCurrentCandidateAsync();
+            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
             if (candidate is null)
             {
                 return Unauthorized(new ApiResponse("Candidate not found"));
@@ -143,11 +146,5 @@ namespace JobApplicationAPI.Controllers.Candidates
                 CompanyName = application.JobPosting.Company?.Name ?? string.Empty,
             },
         };
-
-        private async Task<Candidate?> GetCurrentCandidateAsync()
-        {
-            var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return appUserId is null ? null : await _uow.Candidates.GetByAppUserIdAsync(appUserId);
-        }
     }
 }

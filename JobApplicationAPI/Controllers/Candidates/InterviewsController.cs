@@ -2,9 +2,9 @@ using Domain.Entities;
 using Domain.Repositories;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Interviews;
+using JobApplicationAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace JobApplicationAPI.Controllers.Candidates
 {
@@ -15,15 +15,18 @@ namespace JobApplicationAPI.Controllers.Candidates
     {
         private readonly IUnitOfWork _uow;
 
-        public InterviewsController(IUnitOfWork uow)
+        private readonly CurrentUserService _currentUser;
+
+        public InterviewsController(IUnitOfWork uow, CurrentUserService currentUser)
         {
             _uow = uow;
+            _currentUser = currentUser;
         }
 
         [HttpGet]
         public async Task<ActionResult<ApiResponse<List<InterviewDto>>>> GetAll([FromQuery] long jobApplicationId)
         {
-            var candidate = await GetCurrentCandidateAsync();
+            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
             if (candidate is null)
             {
                 return Unauthorized(new ApiResponse("Candidate not found"));
@@ -44,12 +47,6 @@ namespace JobApplicationAPI.Controllers.Candidates
                 .ToList();
 
             return Ok(new ApiResponse<List<InterviewDto>>("Successfully retrieved interviews for job application", interviews));
-        }
-
-        private async Task<Candidate?> GetCurrentCandidateAsync()
-        {
-            var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return appUserId is null ? null : await _uow.Candidates.GetByAppUserIdAsync(appUserId);
         }
     }
 }

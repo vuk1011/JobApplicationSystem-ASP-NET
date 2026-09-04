@@ -3,9 +3,9 @@ using Domain.Repositories;
 using FluentValidation;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Offers;
+using JobApplicationAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace JobApplicationAPI.Controllers.Candidates
 {
@@ -18,16 +18,19 @@ namespace JobApplicationAPI.Controllers.Candidates
 
         private readonly IValidator<UpdateOfferRequest> _updateValidator;
 
-        public OffersController(IUnitOfWork uow, IValidator<UpdateOfferRequest> updateValidator)
+        private readonly CurrentUserService _currentUser;
+
+        public OffersController(IUnitOfWork uow, IValidator<UpdateOfferRequest> updateValidator, CurrentUserService currentUser)
         {
             _uow = uow;
             _updateValidator = updateValidator;
+            _currentUser = currentUser;
         }
 
         [HttpGet]
         public async Task<ActionResult<ApiResponse<List<OfferDto>>>> GetAll([FromQuery] long jobApplicationId)
         {
-            var candidate = await GetCurrentCandidateAsync();
+            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
             if (candidate is null)
             {
                 return Unauthorized(new ApiResponse("Candidate not found"));
@@ -59,7 +62,7 @@ namespace JobApplicationAPI.Controllers.Candidates
                 return BadRequest(new ApiResponse(string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage))));
             }
 
-            var candidate = await GetCurrentCandidateAsync();
+            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
             if (candidate is null)
             {
                 return Unauthorized(new ApiResponse("Candidate not found"));
@@ -98,12 +101,6 @@ namespace JobApplicationAPI.Controllers.Candidates
             await _uow.SaveChangesAsync();
 
             return Ok(new ApiResponse("Successfully updated offer"));
-        }
-
-        private async Task<Candidate?> GetCurrentCandidateAsync()
-        {
-            var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return appUserId is null ? null : await _uow.Candidates.GetByAppUserIdAsync(appUserId);
         }
     }
 }

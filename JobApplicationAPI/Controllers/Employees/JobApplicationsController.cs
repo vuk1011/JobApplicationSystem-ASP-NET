@@ -6,10 +6,10 @@ using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.JobApplications;
 using JobApplicationAPI.DTOs.JobPostings;
 using JobApplicationAPI.DTOs.Users;
+using JobApplicationAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace JobApplicationAPI.Controllers.Employees
 {
@@ -24,16 +24,20 @@ namespace JobApplicationAPI.Controllers.Employees
         private readonly IValidator<ManageJobApplicationRequest> _manageValidator;
         private readonly IValidator<UpdateJobApplicationStatusRequest> _updateValidator;
 
+        private readonly CurrentUserService _currentUser;
+
         public JobApplicationsController(
             IUnitOfWork uow,
             UserManager<AppUser> userManager,
             IValidator<ManageJobApplicationRequest> manageValidator,
-            IValidator<UpdateJobApplicationStatusRequest> updateValidator)
+            IValidator<UpdateJobApplicationStatusRequest> updateValidator,
+            CurrentUserService currentUser)
         {
             _uow = uow;
             _userManager = userManager;
             _manageValidator = manageValidator;
             _updateValidator = updateValidator;
+            _currentUser = currentUser;
         }
 
         [HttpGet]
@@ -68,7 +72,7 @@ namespace JobApplicationAPI.Controllers.Employees
         [HttpGet("managed")]
         public async Task<ActionResult<ApiResponse<List<JobApplicationEmployeeDto>>>> GetAllManaged()
         {
-            var employee = await GetCurrentEmployeeAsync();
+            var employee = await _currentUser.GetCurrentAsync<Employee>();
             if (employee is null)
             {
                 return Unauthorized(new ApiResponse("Employee not found"));
@@ -87,7 +91,7 @@ namespace JobApplicationAPI.Controllers.Employees
                 return BadRequest(new ApiResponse(string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage))));
             }
 
-            var employee = await GetCurrentEmployeeAsync();
+            var employee = await _currentUser.GetCurrentAsync<Employee>();
             if (employee is null)
             {
                 return Unauthorized(new ApiResponse("Employee not found"));
@@ -114,7 +118,7 @@ namespace JobApplicationAPI.Controllers.Employees
         [HttpGet("managed/{id}")]
         public async Task<ActionResult<ApiResponse<JobApplicationEmployeeDto>>> GetManaged([FromRoute] long id)
         {
-            var employee = await GetCurrentEmployeeAsync();
+            var employee = await _currentUser.GetCurrentAsync<Employee>();
             if (employee is null)
             {
                 return Unauthorized(new ApiResponse("Employee not found"));
@@ -151,7 +155,7 @@ namespace JobApplicationAPI.Controllers.Employees
                 return Conflict(new ApiResponse("Manually setting status to InterviewScheduled is not allowed"));
             }
 
-            var employee = await GetCurrentEmployeeAsync();
+            var employee = await _currentUser.GetCurrentAsync<Employee>();
             if (employee is null)
             {
                 return Unauthorized(new ApiResponse("Employee not found"));
@@ -189,7 +193,7 @@ namespace JobApplicationAPI.Controllers.Employees
         [HttpGet("managed/{id}/candidate/profile")]
         public async Task<ActionResult<ApiResponse<CandidateDto>>> GetCandidateProfileForJobApplication([FromRoute] long id)
         {
-            var employee = await GetCurrentEmployeeAsync();
+            var employee = await _currentUser.GetCurrentAsync<Employee>();
             if (employee is null)
             {
                 return Unauthorized(new ApiResponse("Employee not found"));
@@ -238,7 +242,7 @@ namespace JobApplicationAPI.Controllers.Employees
         [HttpGet("managed/{id}/candidate/resume")]
         public async Task<IActionResult> GetCandidateResumeForJobApplication([FromRoute] long id)
         {
-            var employee = await GetCurrentEmployeeAsync();
+            var employee = await _currentUser.GetCurrentAsync<Employee>();
             if (employee is null)
             {
                 return Unauthorized(new ApiResponse("Employee not found"));
@@ -285,11 +289,5 @@ namespace JobApplicationAPI.Controllers.Employees
             },
             CandidateId = application.CandidateId,
         };
-
-        private async Task<Employee?> GetCurrentEmployeeAsync()
-        {
-            var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return appUserId is null ? null : await _uow.Employees.GetByAppUserIdAsync(appUserId);
-        }
     }
 }

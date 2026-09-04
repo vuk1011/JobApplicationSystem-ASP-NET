@@ -3,9 +3,9 @@ using Domain.Repositories;
 using FluentValidation;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.JobPostings;
+using JobApplicationAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -29,17 +29,20 @@ namespace JobApplicationAPI.Controllers.Employees
             Converters = { new JsonStringEnumConverter() },
         };
 
-        public JobPostingsController(IUnitOfWork uow, IValidator<CreateJobPostingRequest> createValidator, IValidator<UpdateJobPostingRequest> updateValidator)
+        private readonly CurrentUserService _currentUser;
+
+        public JobPostingsController(IUnitOfWork uow, IValidator<CreateJobPostingRequest> createValidator, IValidator<UpdateJobPostingRequest> updateValidator, CurrentUserService currentUser)
         {
             _uow = uow;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
+            _currentUser = currentUser;
         }
 
         [HttpGet]
         public async Task<ActionResult<ApiResponse<List<JobPostingDto>>>> GetAll()
         {
-            var employee = await GetCurrentEmployeeAsync();
+            var employee = await _currentUser.GetCurrentAsync<Employee>();
             if (employee is null)
             {
                 return Unauthorized(new ApiResponse("Employee not found"));
@@ -60,7 +63,7 @@ namespace JobApplicationAPI.Controllers.Employees
                 return BadRequest(new ApiResponse(string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage))));
             }
 
-            var employee = await GetCurrentEmployeeAsync();
+            var employee = await _currentUser.GetCurrentAsync<Employee>();
             if (employee is null)
             {
                 return Unauthorized(new ApiResponse("Employee not found"));
@@ -82,7 +85,7 @@ namespace JobApplicationAPI.Controllers.Employees
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<JobPostingDto>>> Get([FromRoute] long id)
         {
-            var employee = await GetCurrentEmployeeAsync();
+            var employee = await _currentUser.GetCurrentAsync<Employee>();
             if (employee is null)
             {
                 return Unauthorized(new ApiResponse("Employee not found"));
@@ -110,7 +113,7 @@ namespace JobApplicationAPI.Controllers.Employees
                 return BadRequest(new ApiResponse(string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage))));
             }
 
-            var employee = await GetCurrentEmployeeAsync();
+            var employee = await _currentUser.GetCurrentAsync<Employee>();
             if (employee is null)
             {
                 return Unauthorized(new ApiResponse("Employee not found"));
@@ -142,7 +145,7 @@ namespace JobApplicationAPI.Controllers.Employees
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse>> Delete([FromRoute] long id)
         {
-            var employee = await GetCurrentEmployeeAsync();
+            var employee = await _currentUser.GetCurrentAsync<Employee>();
             if (employee is null)
             {
                 return Unauthorized(new ApiResponse("Employee not found"));
@@ -167,7 +170,7 @@ namespace JobApplicationAPI.Controllers.Employees
         [HttpGet("export")]
         public async Task<IActionResult> Export()
         {
-            var employee = await GetCurrentEmployeeAsync();
+            var employee = await _currentUser.GetCurrentAsync<Employee>();
             if (employee is null)
             {
                 return Unauthorized(new ApiResponse("Employee not found"));
@@ -187,7 +190,7 @@ namespace JobApplicationAPI.Controllers.Employees
                 return BadRequest(new ApiResponse("File is empty"));
             }
 
-            var employee = await GetCurrentEmployeeAsync();
+            var employee = await _currentUser.GetCurrentAsync<Employee>();
             if (employee is null)
             {
                 return Unauthorized(new ApiResponse("Employee not found"));
@@ -246,11 +249,5 @@ namespace JobApplicationAPI.Controllers.Employees
             IsClosed = jobPosting.IsClosed,
             CompanyName = jobPosting.Company?.Name ?? string.Empty,
         };
-
-        private async Task<Employee?> GetCurrentEmployeeAsync()
-        {
-            var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return appUserId is null ? null : await _uow.Employees.GetByAppUserIdAsync(appUserId);
-        }
     }
 }

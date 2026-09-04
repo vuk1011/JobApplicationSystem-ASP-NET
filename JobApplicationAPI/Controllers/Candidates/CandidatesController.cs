@@ -4,10 +4,10 @@ using FluentValidation;
 using Infrastructure.Identity;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Users;
+using JobApplicationAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace JobApplicationAPI.Controllers.Candidates
 {
@@ -21,17 +21,20 @@ namespace JobApplicationAPI.Controllers.Candidates
 
         private readonly IValidator<UpdateCandidateRequest> _updateCandidateValidator;
 
-        public CandidatesController(IUnitOfWork uow, UserManager<AppUser> userManager, IValidator<UpdateCandidateRequest> updateCandidateValidator)
+        private readonly CurrentUserService _currentUser;
+
+        public CandidatesController(IUnitOfWork uow, UserManager<AppUser> userManager, IValidator<UpdateCandidateRequest> updateCandidateValidator, CurrentUserService currentUser)
         {
             _uow = uow;
             _userManager = userManager;
             _updateCandidateValidator = updateCandidateValidator;
+            _currentUser = currentUser;
         }
 
         [HttpGet("resume")]
         public async Task<IActionResult> GetResume()
         {
-            var candidate = await GetCurrentCandidateAsync();
+            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
             if (candidate is null || candidate.Resume is null || candidate.Resume.Length == 0)
             {
                 return NotFound(new ApiResponse("Resume not uploaded"));
@@ -48,7 +51,7 @@ namespace JobApplicationAPI.Controllers.Candidates
                 return BadRequest(new ApiResponse("Only PDF resumes are allowed"));
             }
 
-            var candidate = await GetCurrentCandidateAsync();
+            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
             if (candidate is null)
             {
                 return Unauthorized(new ApiResponse("Candidate not found"));
@@ -66,7 +69,7 @@ namespace JobApplicationAPI.Controllers.Candidates
         [HttpDelete("resume")]
         public async Task<ActionResult<ApiResponse>> DeleteResume()
         {
-            var candidate = await GetCurrentCandidateAsync();
+            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
             if (candidate is null)
             {
                 return Unauthorized(new ApiResponse("Candidate not found"));
@@ -82,7 +85,7 @@ namespace JobApplicationAPI.Controllers.Candidates
         [HttpGet("profile")]
         public async Task<ActionResult<ApiResponse<CandidateDto>>> GetProfile()
         {
-            var candidate = await GetCurrentCandidateAsync();
+            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
             if (candidate is null)
             {
                 return Unauthorized(new ApiResponse("Candidate not found"));
@@ -106,7 +109,7 @@ namespace JobApplicationAPI.Controllers.Candidates
                 return BadRequest(new ApiResponse(string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage))));
             }
 
-            var candidate = await GetCurrentCandidateAsync();
+            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
             if (candidate is null)
             {
                 return Unauthorized(new ApiResponse("Candidate not found"));
@@ -141,11 +144,5 @@ namespace JobApplicationAPI.Controllers.Candidates
             Email = appUser.Email ?? string.Empty,
             Phone = appUser.PhoneNumber ?? string.Empty,
         };
-
-        private async Task<Candidate?> GetCurrentCandidateAsync()
-        {
-            var appUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return appUserId is null ? null : await _uow.Candidates.GetByAppUserIdAsync(appUserId);
-        }
     }
 }
