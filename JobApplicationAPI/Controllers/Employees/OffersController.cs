@@ -15,9 +15,7 @@ namespace JobApplicationAPI.Controllers.Employees
     public class OffersController : ControllerBase
     {
         private readonly IUnitOfWork _uow;
-
         private readonly IValidator<CreateOfferRequest> _createValidator;
-
         private readonly CurrentUserService _currentUser;
 
         public OffersController(IUnitOfWork uow, IValidator<CreateOfferRequest> createValidator, CurrentUserService currentUser)

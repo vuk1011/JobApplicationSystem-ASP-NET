@@ -18,7 +18,6 @@ namespace JobApplicationAPI.Controllers.Employees
     public class JobPostingsController : ControllerBase
     {
         private readonly IUnitOfWork _uow;
-
         private readonly IValidator<CreateJobPostingRequest> _createValidator;
         private readonly IValidator<UpdateJobPostingRequest> _updateValidator;
 

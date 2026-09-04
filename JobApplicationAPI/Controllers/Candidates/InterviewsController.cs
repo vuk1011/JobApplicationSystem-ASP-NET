@@ -14,7 +14,6 @@ namespace JobApplicationAPI.Controllers.Candidates
     public class InterviewsController : ControllerBase
     {
         private readonly IUnitOfWork _uow;
-
         private readonly CurrentUserService _currentUser;
 
         public InterviewsController(IUnitOfWork uow, CurrentUserService currentUser)

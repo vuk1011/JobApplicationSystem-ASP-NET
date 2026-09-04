@@ -19,9 +19,7 @@ namespace JobApplicationAPI.Controllers.Candidates
     {
         private readonly IUnitOfWork _uow;
         private readonly UserManager<AppUser> _userManager;
-
         private readonly IValidator<UpdateCandidateRequest> _updateCandidateValidator;
-
         private readonly CurrentUserService _currentUser;
 
         public CandidatesController(IUnitOfWork uow, UserManager<AppUser> userManager, IValidator<UpdateCandidateRequest> updateCandidateValidator, CurrentUserService currentUser)

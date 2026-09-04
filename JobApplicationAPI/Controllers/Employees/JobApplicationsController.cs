@@ -20,10 +20,8 @@ namespace JobApplicationAPI.Controllers.Employees
     {
         private readonly IUnitOfWork _uow;
         private readonly UserManager<AppUser> _userManager;
-
         private readonly IValidator<ManageJobApplicationRequest> _manageValidator;
         private readonly IValidator<UpdateJobApplicationStatusRequest> _updateValidator;
-
         private readonly CurrentUserService _currentUser;
 
         public JobApplicationsController(

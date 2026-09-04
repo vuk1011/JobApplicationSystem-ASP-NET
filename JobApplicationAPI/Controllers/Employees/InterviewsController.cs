@@ -15,9 +15,7 @@ namespace JobApplicationAPI.Controllers.Employees
     public class InterviewsController : ControllerBase
     {
         private readonly IUnitOfWork _uow;
-
         private readonly IValidator<CreateInterviewRequest> _createValidator;
-
         private readonly CurrentUserService _currentUser;
 
         public InterviewsController(IUnitOfWork uow, IValidator<CreateInterviewRequest> createValidator, CurrentUserService currentUser)

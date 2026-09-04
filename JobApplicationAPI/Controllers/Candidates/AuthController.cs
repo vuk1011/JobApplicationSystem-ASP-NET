@@ -17,10 +17,8 @@ namespace JobApplicationAPI.Controllers.Candidates
     public class AuthController : ControllerBase
     {
         private readonly IUnitOfWork _uow;
-
         private readonly UserManager<AppUser> _userManager;
         private readonly JwtService _jwtService;
-
         private readonly IValidator<LoginRequest> _loginValidator;
         private readonly IValidator<RegisterCandidateRequest> _registerValidator;
 

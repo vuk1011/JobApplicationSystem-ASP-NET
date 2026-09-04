@@ -16,9 +16,7 @@ namespace JobApplicationAPI.Controllers.Candidates
     public class JobApplicationsController : ControllerBase
     {
         private readonly IUnitOfWork _uow;
-
         private readonly IValidator<SubmitJobApplicationRequest> _submitValidator;
-
         private readonly CurrentUserService _currentUser;
 
         public JobApplicationsController(IUnitOfWork uow, IValidator<SubmitJobApplicationRequest> submitValidator, CurrentUserService currentUser)
