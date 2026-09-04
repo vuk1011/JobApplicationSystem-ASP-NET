@@ -6,11 +6,12 @@ namespace JobApplicationAPI.Queries.Candidates
     {
         public GetCandidateHandler()
         {
-            
+
         }
 
         public async Task<Unit> Handle(GetCandidateQuery request, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
+    }
 }
