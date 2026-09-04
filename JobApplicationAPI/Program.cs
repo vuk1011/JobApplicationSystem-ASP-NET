@@ -3,6 +3,7 @@ using FluentValidation;
 using Infrastructure;
 using Infrastructure.Identity;
 using JobApplicationAPI.Data;
+using JobApplicationAPI.Middlewares;
 using JobApplicationAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -72,6 +73,8 @@ builder.Services
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
