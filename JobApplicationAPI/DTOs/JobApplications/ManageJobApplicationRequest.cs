@@ -2,6 +2,6 @@
 {
     public class ManageJobApplicationRequest
     {
-        public long JobApplicationId { get; set; }
+        public long ApplicationId { get; set; }
     }
 }

@@ -79,7 +79,7 @@ namespace JobApplicationAPI.Controllers.Candidates
             {
                 return Unauthorized(new ApiResponse("You're unauthorized for this job application"));
             }
-            if (application.Status == JobApplicationStatus.Accepted)
+            if (application.Status == JobApplicationStatus.ACCEPTED)
             {
                 return Conflict(new ApiResponse("Offer cannot be updated in application's final status"));
             }
@@ -88,7 +88,7 @@ namespace JobApplicationAPI.Controllers.Candidates
                 return Conflict(new ApiResponse("Offer cannot be updated after it got accepted or rejected"));
             }
 
-            var targetStatus = request.Accepted ? JobApplicationStatus.Accepted : JobApplicationStatus.Rejected;
+            var targetStatus = request.Accepted ? JobApplicationStatus.ACCEPTED : JobApplicationStatus.REJECTED;
             if (!JobApplicationStatusUtil.IsStatusChangeAllowed(application.Status, targetStatus))
             {
                 return Conflict(new ApiResponse("Offer cannot be updated when job application is in current status"));

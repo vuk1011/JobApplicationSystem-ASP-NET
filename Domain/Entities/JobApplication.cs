@@ -19,12 +19,12 @@
 
     public enum JobApplicationStatus
     {
-        Submitted,
-        UnderReview,
-        InterviewScheduled,
-        Offered,
-        Accepted,
-        Rejected,
+        SUBMITTED,
+        UNDER_REVIEW,
+        INTERVIEW_SCHEDULED,
+        OFFERED,
+        ACCEPTED,
+        REJECTED,
     }
 
     public static class JobApplicationStatusUtil
@@ -35,23 +35,23 @@
             {
                 return true;
             }
-            if (before == JobApplicationStatus.UnderReview && (after == JobApplicationStatus.InterviewScheduled || after == JobApplicationStatus.Rejected))
+            if (before == JobApplicationStatus.UNDER_REVIEW && (after == JobApplicationStatus.INTERVIEW_SCHEDULED || after == JobApplicationStatus.REJECTED))
             {
                 return true;
             }
-            else if (before == JobApplicationStatus.InterviewScheduled && (after == JobApplicationStatus.Offered || after == JobApplicationStatus.Rejected))
+            else if (before == JobApplicationStatus.INTERVIEW_SCHEDULED && (after == JobApplicationStatus.OFFERED || after == JobApplicationStatus.REJECTED))
             {
                 return true;
             }
-            else if (before == JobApplicationStatus.Offered && (after == JobApplicationStatus.Accepted || after == JobApplicationStatus.Rejected))
+            else if (before == JobApplicationStatus.OFFERED && (after == JobApplicationStatus.ACCEPTED || after == JobApplicationStatus.REJECTED))
             {
                 return true;
             }
-            else if (before == JobApplicationStatus.Rejected && after == JobApplicationStatus.Offered)
+            else if (before == JobApplicationStatus.REJECTED && after == JobApplicationStatus.OFFERED)
             {
                 return true;
             }
-            else if (before == JobApplicationStatus.Rejected && after == JobApplicationStatus.Accepted)
+            else if (before == JobApplicationStatus.REJECTED && after == JobApplicationStatus.ACCEPTED)
             {
                 return true;
             }

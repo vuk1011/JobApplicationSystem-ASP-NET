@@ -85,12 +85,12 @@ namespace JobApplicationAPI.Controllers.Employees
             {
                 return Unauthorized(new ApiResponse("Another employee is managing this job application"));
             }
-            if (!JobApplicationStatusUtil.IsStatusChangeAllowed(application.Status, JobApplicationStatus.InterviewScheduled))
+            if (!JobApplicationStatusUtil.IsStatusChangeAllowed(application.Status, JobApplicationStatus.INTERVIEW_SCHEDULED))
             {
                 return Conflict(new ApiResponse("Interview cannot be scheduled from current status"));
             }
 
-            application.Status = JobApplicationStatus.InterviewScheduled;
+            application.Status = JobApplicationStatus.INTERVIEW_SCHEDULED;
             _uow.JobApplications.Update(application);
 
             var interview = new Interview

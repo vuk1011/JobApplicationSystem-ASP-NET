@@ -4,6 +4,7 @@ using FluentValidation;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.JobPostings;
 using JobApplicationAPI.Services;
+using JobApplicationAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
@@ -48,7 +49,7 @@ namespace JobApplicationAPI.Controllers.Employees
                 return Unauthorized(new ApiResponse("Employee not found"));
             }
 
-            var jobPostings = _uow.JobPostings.GetAllByCompanyId(employee.CompanyId).Select(ToDto).ToList();
+            var jobPostings = _uow.JobPostings.GetAllByCompanyId(employee.CompanyId).Select(JobPostingMapper.ToDto).ToList();
             return Ok(new ApiResponse<List<JobPostingDto>>("Job postings retrieved", jobPostings));
         }
 
@@ -79,7 +80,7 @@ namespace JobApplicationAPI.Controllers.Employees
             await _uow.SaveChangesAsync();
 
             var created = _uow.JobPostings.GetByIdWithCompany(jobPosting.Id)!;
-            return Ok(new ApiResponse<JobPostingDto>("Job posting created", ToDto(created)));
+            return Ok(new ApiResponse<JobPostingDto>("Job posting created", JobPostingMapper.ToDto(created)));
         }
 
         [HttpGet("{id}")]
@@ -101,7 +102,7 @@ namespace JobApplicationAPI.Controllers.Employees
                 return Unauthorized(new ApiResponse("This job posting does not belong to your company"));
             }
 
-            return Ok(new ApiResponse<JobPostingDto>("Job posting retrieved", ToDto(jobPosting)));
+            return Ok(new ApiResponse<JobPostingDto>("Job posting retrieved", JobPostingMapper.ToDto(jobPosting)));
         }
 
         [HttpPut("{id}")]
@@ -176,7 +177,7 @@ namespace JobApplicationAPI.Controllers.Employees
                 return Unauthorized(new ApiResponse("Employee not found"));
             }
 
-            var jobPostings = _uow.JobPostings.GetAllByCompanyId(employee.CompanyId).Select(ToDto).ToList();
+            var jobPostings = _uow.JobPostings.GetAllByCompanyId(employee.CompanyId).Select(JobPostingMapper.ToDto).ToList();
             var json = JsonSerializer.Serialize(jobPostings, JsonOptions);
 
             return File(System.Text.Encoding.UTF8.GetBytes(json), "application/json", "job-postings.json");
@@ -223,7 +224,7 @@ namespace JobApplicationAPI.Controllers.Employees
                 await _uow.SaveChangesAsync();
 
                 var created = _uow.JobPostings.GetByIdWithCompany(jobPosting.Id)!;
-                imported.Add(ToDto(created));
+                imported.Add(JobPostingMapper.ToDto(created));
             }
 
             return Ok(new ApiResponse<List<JobPostingDto>>($"{imported.Count} job posting(s) imported", imported));
@@ -236,18 +237,6 @@ namespace JobApplicationAPI.Controllers.Employees
             DateOfPublishing = DateOnly.FromDateTime(DateTime.Today),
             DateOfExpiration = request.DateOfExpiration,
             CompanyId = companyId,
-        };
-
-        private static JobPostingDto ToDto(JobPosting jobPosting) => new()
-        {
-            Id = jobPosting.Id,
-            Title = jobPosting.Title,
-            Description = jobPosting.Description,
-            DateOfPublishing = jobPosting.DateOfPublishing,
-            DateOfExpiration = jobPosting.DateOfExpiration,
-            Status = jobPosting.Status,
-            IsClosed = jobPosting.IsClosed,
-            CompanyName = jobPosting.Company?.Name ?? string.Empty,
         };
     }
 }

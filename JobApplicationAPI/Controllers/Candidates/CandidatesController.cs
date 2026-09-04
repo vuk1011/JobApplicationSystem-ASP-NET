@@ -5,6 +5,7 @@ using Infrastructure.Identity;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Users;
 using JobApplicationAPI.Services;
+using JobApplicationAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -40,7 +41,8 @@ namespace JobApplicationAPI.Controllers.Candidates
                 return NotFound(new ApiResponse("Resume not uploaded"));
             }
 
-            return File(candidate.Resume, "application/pdf", "resume.pdf");
+            Response.Headers.ContentDisposition = "inline; filename=\"resume.pdf\"";
+            return File(candidate.Resume, "application/pdf");
         }
 
         [HttpPut("resume")]
@@ -97,7 +99,7 @@ namespace JobApplicationAPI.Controllers.Candidates
                 return NotFound(new ApiResponse("Candidate not found"));
             }
 
-            return Ok(new ApiResponse<CandidateDto>("Profile information retrieved successfully", ToDto(candidate, appUser)));
+            return Ok(new ApiResponse<CandidateDto>("Profile information retrieved successfully", CandidateMapper.ToDto(candidate, appUser)));
         }
 
         [HttpPut("profile")]
@@ -131,18 +133,7 @@ namespace JobApplicationAPI.Controllers.Candidates
             appUser.PhoneNumber = request.Phone;
             await _userManager.UpdateAsync(appUser);
 
-            return Ok(new ApiResponse<CandidateDto>("Profile information updated successfully", ToDto(candidate, appUser)));
+            return Ok(new ApiResponse<CandidateDto>("Profile information updated successfully", CandidateMapper.ToDto(candidate, appUser)));
         }
-
-        private static CandidateDto ToDto(Candidate candidate, AppUser appUser) => new()
-        {
-            Id = candidate.Id,
-            FirstName = candidate.FirstName,
-            LastName = candidate.LastName,
-            Sex = candidate.Sex,
-            Address = candidate.Address,
-            Email = appUser.Email ?? string.Empty,
-            Phone = appUser.PhoneNumber ?? string.Empty,
-        };
     }
 }

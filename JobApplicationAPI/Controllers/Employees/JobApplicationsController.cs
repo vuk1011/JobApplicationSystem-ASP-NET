@@ -4,9 +4,9 @@ using FluentValidation;
 using Infrastructure.Identity;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.JobApplications;
-using JobApplicationAPI.DTOs.JobPostings;
 using JobApplicationAPI.DTOs.Users;
 using JobApplicationAPI.Services;
+using JobApplicationAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -40,8 +40,8 @@ namespace JobApplicationAPI.Controllers.Employees
             _currentUser = currentUser;
         }
 
-        [HttpGet]
-        public ActionResult<ApiResponse<List<JobApplicationEmployeeDto>>> GetAllByJobPosting([FromQuery] long jobPostingId)
+        [HttpGet("job-posting/{jobPostingId}")]
+        public ActionResult<ApiResponse<List<JobApplicationEmployeeDto>>> GetAllByJobPosting([FromRoute] long jobPostingId)
         {
             var jobPosting = _uow.JobPostings.GetByIdWithCompany(jobPostingId);
             if (jobPosting is null)
@@ -49,7 +49,7 @@ namespace JobApplicationAPI.Controllers.Employees
                 return NotFound(new ApiResponse("Job posting not found"));
             }
 
-            var applications = _uow.JobApplications.GetUnmanagedByJobPostingId(jobPostingId).Select(ToDto).ToList();
+            var applications = _uow.JobApplications.GetUnmanagedByJobPostingId(jobPostingId).Select(JobApplicationMapper.ToEmployeeDto).ToList();
             return Ok(new ApiResponse<List<JobApplicationEmployeeDto>>("Job applications retrieved", applications));
         }
 
@@ -66,7 +66,7 @@ namespace JobApplicationAPI.Controllers.Employees
                 return Conflict(new ApiResponse("This job application is already managed"));
             }
 
-            return Ok(new ApiResponse<JobApplicationEmployeeDto>("Job application retrieved", ToDto(application)));
+            return Ok(new ApiResponse<JobApplicationEmployeeDto>("Job application retrieved", JobApplicationMapper.ToEmployeeDto(application)));
         }
 
         [HttpGet("managed")]
@@ -78,7 +78,7 @@ namespace JobApplicationAPI.Controllers.Employees
                 return Unauthorized(new ApiResponse("Employee not found"));
             }
 
-            var applications = _uow.JobApplications.GetManagedByEmployeeId(employee.Id).Select(ToDto).ToList();
+            var applications = _uow.JobApplications.GetManagedByEmployeeId(employee.Id).Select(JobApplicationMapper.ToEmployeeDto).ToList();
             return Ok(new ApiResponse<List<JobApplicationEmployeeDto>>("Managed job applications retrieved", applications));
         }
 
@@ -97,7 +97,7 @@ namespace JobApplicationAPI.Controllers.Employees
                 return Unauthorized(new ApiResponse("Employee not found"));
             }
 
-            var application = _uow.JobApplications.GetByIdWithDetails(request.JobApplicationId);
+            var application = _uow.JobApplications.GetByIdWithDetails(request.ApplicationId);
             if (application is null)
             {
                 return NotFound(new ApiResponse("Job application not found"));
@@ -108,7 +108,7 @@ namespace JobApplicationAPI.Controllers.Employees
             }
 
             application.EmployeeId = employee.Id;
-            application.Status = JobApplicationStatus.UnderReview;
+            application.Status = JobApplicationStatus.UNDER_REVIEW;
             _uow.JobApplications.Update(application);
             await _uow.SaveChangesAsync();
 
@@ -138,7 +138,7 @@ namespace JobApplicationAPI.Controllers.Employees
                 return Unauthorized(new ApiResponse("Another employee is managing this job application"));
             }
 
-            return Ok(new ApiResponse<JobApplicationEmployeeDto>("Job application retrieved", ToDto(application)));
+            return Ok(new ApiResponse<JobApplicationEmployeeDto>("Job application retrieved", JobApplicationMapper.ToEmployeeDto(application)));
         }
 
         [HttpPut("managed/{id}")]
@@ -150,7 +150,7 @@ namespace JobApplicationAPI.Controllers.Employees
                 return BadRequest(new ApiResponse(string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage))));
             }
 
-            if (request.Status == JobApplicationStatus.InterviewScheduled)
+            if (request.Status == JobApplicationStatus.INTERVIEW_SCHEDULED)
             {
                 return Conflict(new ApiResponse("Manually setting status to InterviewScheduled is not allowed"));
             }
@@ -174,7 +174,7 @@ namespace JobApplicationAPI.Controllers.Employees
             {
                 return Unauthorized(new ApiResponse("Another employee is managing this job application"));
             }
-            if (application.Status == JobApplicationStatus.Accepted)
+            if (application.Status == JobApplicationStatus.ACCEPTED)
             {
                 return Conflict(new ApiResponse("You cannot edit this application's status"));
             }
@@ -268,26 +268,8 @@ namespace JobApplicationAPI.Controllers.Employees
                 return NotFound(new ApiResponse("Resume not uploaded"));
             }
 
-            return File(candidate.Resume, "application/pdf", "resume.pdf");
+            Response.Headers.ContentDisposition = "inline; filename=\"resume.pdf\"";
+            return File(candidate.Resume, "application/pdf");
         }
-
-        private static JobApplicationEmployeeDto ToDto(JobApplication application) => new()
-        {
-            Id = application.Id,
-            DateOfSubmission = application.DateOfSubmission,
-            Status = application.Status,
-            JobPosting = new JobPostingDto
-            {
-                Id = application.JobPosting.Id,
-                Title = application.JobPosting.Title,
-                Description = application.JobPosting.Description,
-                DateOfPublishing = application.JobPosting.DateOfPublishing,
-                DateOfExpiration = application.JobPosting.DateOfExpiration,
-                Status = application.JobPosting.Status,
-                IsClosed = application.JobPosting.IsClosed,
-                CompanyName = application.JobPosting.Company?.Name ?? string.Empty,
-            },
-            CandidateId = application.CandidateId,
-        };
     }
 }

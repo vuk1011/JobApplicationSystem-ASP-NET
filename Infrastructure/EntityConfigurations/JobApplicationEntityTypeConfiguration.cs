@@ -23,14 +23,14 @@ namespace Infrastructure.EntityConfigurations
                 .WithOne(e => e.JobApplication)
                 .HasForeignKey(e => e.JobApplicationId)
                 .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder
                 .HasMany(e => e.Interviews)
                 .WithOne(e => e.JobApplication)
                 .HasForeignKey(e => e.JobApplicationId)
                 .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder
                 .Ignore(e => e.IsManaged);

@@ -85,12 +85,12 @@ namespace JobApplicationAPI.Controllers.Employees
             {
                 return Unauthorized(new ApiResponse("Another employee is managing this job application"));
             }
-            if (!JobApplicationStatusUtil.IsStatusChangeAllowed(application.Status, JobApplicationStatus.Offered))
+            if (!JobApplicationStatusUtil.IsStatusChangeAllowed(application.Status, JobApplicationStatus.OFFERED))
             {
                 return Conflict(new ApiResponse("Offer cannot be created in current status"));
             }
 
-            application.Status = JobApplicationStatus.Offered;
+            application.Status = JobApplicationStatus.OFFERED;
             _uow.JobApplications.Update(application);
 
             var offer = new Offer

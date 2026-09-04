@@ -25,7 +25,7 @@ namespace JobApplicationAPI.Validators
     {
         public ManageJobApplicationRequestValidator()
         {
-            RuleFor(x => x.JobApplicationId)
+            RuleFor(x => x.ApplicationId)
                 .GreaterThan(0).WithMessage("Job application is required");
         }
     }

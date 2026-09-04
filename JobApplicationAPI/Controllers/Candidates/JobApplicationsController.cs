@@ -3,8 +3,8 @@ using Domain.Repositories;
 using FluentValidation;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.JobApplications;
-using JobApplicationAPI.DTOs.JobPostings;
 using JobApplicationAPI.Services;
+using JobApplicationAPI.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -62,7 +62,7 @@ namespace JobApplicationAPI.Controllers.Candidates
             var application = new JobApplication
             {
                 DateOfSubmission = DateOnly.FromDateTime(DateTime.Today),
-                Status = JobApplicationStatus.Submitted,
+                Status = JobApplicationStatus.SUBMITTED,
                 JobPostingId = jobPosting.Id,
                 CandidateId = candidate.Id,
             };
@@ -81,7 +81,7 @@ namespace JobApplicationAPI.Controllers.Candidates
                 return Unauthorized(new ApiResponse("Candidate not found"));
             }
 
-            var applications = _uow.JobApplications.GetByCandidateId(candidate.Id).Select(ToDto).ToList();
+            var applications = _uow.JobApplications.GetByCandidateId(candidate.Id).Select(JobApplicationMapper.ToCandidateDto).ToList();
             return Ok(new ApiResponse<List<JobApplicationCandidateDto>>("Successfully retrieved all applications", applications));
         }
 
@@ -100,7 +100,7 @@ namespace JobApplicationAPI.Controllers.Candidates
                 return NotFound(new ApiResponse("Job application not found"));
             }
 
-            return Ok(new ApiResponse<JobApplicationCandidateDto>("Successfully retrieved the application", ToDto(application)));
+            return Ok(new ApiResponse<JobApplicationCandidateDto>("Successfully retrieved the application", JobApplicationMapper.ToCandidateDto(application)));
         }
 
         [HttpDelete("{id}")]
@@ -118,7 +118,7 @@ namespace JobApplicationAPI.Controllers.Candidates
                 return NotFound(new ApiResponse("Job application not found"));
             }
 
-            if (application.Status is JobApplicationStatus.Offered or JobApplicationStatus.Accepted or JobApplicationStatus.Rejected)
+            if (application.Status is JobApplicationStatus.OFFERED or JobApplicationStatus.ACCEPTED or JobApplicationStatus.REJECTED)
             {
                 return Conflict(new ApiResponse("Job application cannot be withdrawn if state is Offered, Accepted or Rejected"));
             }
@@ -128,23 +128,5 @@ namespace JobApplicationAPI.Controllers.Candidates
 
             return Ok(new ApiResponse("Successfully withdrawn an application"));
         }
-
-        private static JobApplicationCandidateDto ToDto(JobApplication application) => new()
-        {
-            Id = application.Id,
-            DateOfSubmission = application.DateOfSubmission,
-            Status = application.Status,
-            JobPosting = new JobPostingDto
-            {
-                Id = application.JobPosting.Id,
-                Title = application.JobPosting.Title,
-                Description = application.JobPosting.Description,
-                DateOfPublishing = application.JobPosting.DateOfPublishing,
-                DateOfExpiration = application.JobPosting.DateOfExpiration,
-                Status = application.JobPosting.Status,
-                IsClosed = application.JobPosting.IsClosed,
-                CompanyName = application.JobPosting.Company?.Name ?? string.Empty,
-            },
-        };
     }
 }
