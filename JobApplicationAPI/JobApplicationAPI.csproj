@@ -25,17 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Commands\Candidates\" />
-    <Folder Include="Commands\Interviews\" />
-    <Folder Include="Commands\JobApplications\" />
-    <Folder Include="Commands\JobPostings\" />
-    <Folder Include="Commands\Offers\" />
     <Folder Include="Common\" />
-    <Folder Include="Queries\Candidates\" />
-    <Folder Include="Queries\Interviews\" />
-    <Folder Include="Queries\JobApplications\" />
-    <Folder Include="Queries\JobPostings\" />
-    <Folder Include="Queries\Offers\" />
   </ItemGroup>
 
 </Project>
