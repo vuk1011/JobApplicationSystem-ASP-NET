@@ -36,6 +36,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
         .EnableSensitiveDataLogging());
 
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<JwtService>();
