@@ -2,5 +2,5 @@
 
 namespace JobApplicationAPI.Commands.JobApplications
 {
-    public record DeleteJobApplicationCommand : IRequest<Unit>;
+    public record DeleteJobApplicationCommand(string? UserId, long JobApplicationId) : IRequest<Unit>;
 }
