@@ -1,14 +1,9 @@
-using Domain.Repositories;
-using FluentValidation;
-using Infrastructure.Identity;
 using JobApplicationAPI.Commands.Candidates;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Users;
 using JobApplicationAPI.Queries.Candidates;
-using JobApplicationAPI.Services;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -21,19 +16,9 @@ namespace JobApplicationAPI.Controllers.Candidates
     {
         private readonly IMediator _mediator;
 
-        private readonly IUnitOfWork _uow;
-        private readonly UserManager<AppUser> _userManager;
-        private readonly IValidator<UpdateCandidateRequest> _updateCandidateValidator;
-        private readonly CurrentUserService _currentUser;
-
-        public CandidatesController(IMediator mediator, IUnitOfWork uow, UserManager<AppUser> userManager, IValidator<UpdateCandidateRequest> updateCandidateValidator, CurrentUserService currentUser)
+        public CandidatesController(IMediator mediator)
         {
             _mediator = mediator;
-
-            _uow = uow;
-            _userManager = userManager;
-            _updateCandidateValidator = updateCandidateValidator;
-            _currentUser = currentUser;
         }
 
         [HttpGet("resume")]
