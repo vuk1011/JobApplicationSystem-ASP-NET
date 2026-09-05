@@ -1,6 +1,7 @@
-﻿using MediatR;
+﻿using JobApplicationAPI.DTOs.Users;
+using MediatR;
 
 namespace JobApplicationAPI.Queries.Candidates
 {
-    public record GetCandidateQuery : IRequest<Unit>;
+    public record GetCandidateQuery(string? UserId) : IRequest<CandidateDto>;
 }

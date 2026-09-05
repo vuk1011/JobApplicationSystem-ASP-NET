@@ -1,6 +1,7 @@
-﻿using MediatR;
+﻿using JobApplicationAPI.DTOs.Users;
+using MediatR;
 
 namespace JobApplicationAPI.Commands.Candidates
 {
-    public record UpdateCandidateCommand : IRequest<Unit>;
+    public record UpdateCandidateCommand(string? UserId, UpdateCandidateRequest Request) : IRequest<CandidateDto>;
 }

@@ -2,5 +2,5 @@
 
 namespace JobApplicationAPI.Commands.Candidates
 {
-    public record UpdateResumeCommand : IRequest<Unit>;
+    public record UpdateResumeCommand(string? UserId, Stream FileStream) : IRequest<Unit>;
 }

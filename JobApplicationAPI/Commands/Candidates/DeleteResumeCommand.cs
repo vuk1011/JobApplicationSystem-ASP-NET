@@ -2,5 +2,5 @@
 
 namespace JobApplicationAPI.Commands.Candidates
 {
-    public record DeleteResumeCommand : IRequest<Unit>;
+    public record DeleteResumeCommand(string? UserId) : IRequest<Unit>;
 }
