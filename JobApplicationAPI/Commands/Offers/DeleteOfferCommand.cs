@@ -2,5 +2,5 @@
 
 namespace JobApplicationAPI.Commands.Offers
 {
-    public record DeleteOfferCommand : IRequest<Unit>;
+    public record DeleteOfferCommand(string? UserId, long OfferId) : IRequest<Unit>;
 }
