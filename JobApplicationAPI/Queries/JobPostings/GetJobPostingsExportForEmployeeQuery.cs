@@ -2,5 +2,5 @@
 
 namespace JobApplicationAPI.Queries.JobPostings
 {
-    public record GetJobPostingsExportForEmployeeQuery : IRequest<Unit>;
+    public record GetJobPostingsExportForEmployeeQuery(string? UserId) : IRequest<string>;
 }

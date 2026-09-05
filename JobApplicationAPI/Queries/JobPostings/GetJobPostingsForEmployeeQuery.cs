@@ -1,6 +1,7 @@
-﻿using MediatR;
+﻿using JobApplicationAPI.DTOs.JobPostings;
+using MediatR;
 
 namespace JobApplicationAPI.Queries.JobPostings
 {
-    public record GetJobPostingsForEmployeeQuery : IRequest<Unit>;
+    public record GetJobPostingsForEmployeeQuery(string? UserId) : IRequest<List<JobPostingDto>>;
 }
