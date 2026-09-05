@@ -5,6 +5,7 @@ using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.JobPostings;
 using JobApplicationAPI.Services;
 using JobApplicationAPI.Utilities;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
@@ -17,6 +18,8 @@ namespace JobApplicationAPI.Controllers.Employees
     [Authorize(Roles = "Employee")]
     public class JobPostingsController : ControllerBase
     {
+        private readonly IMediator _mediator;
+
         private readonly IUnitOfWork _uow;
         private readonly IValidator<CreateJobPostingRequest> _createValidator;
         private readonly IValidator<UpdateJobPostingRequest> _updateValidator;
@@ -31,8 +34,9 @@ namespace JobApplicationAPI.Controllers.Employees
 
         private readonly CurrentUserService _currentUser;
 
-        public JobPostingsController(IUnitOfWork uow, IValidator<CreateJobPostingRequest> createValidator, IValidator<UpdateJobPostingRequest> updateValidator, CurrentUserService currentUser)
+        public JobPostingsController(IMediator mediator, IUnitOfWork uow, IValidator<CreateJobPostingRequest> createValidator, IValidator<UpdateJobPostingRequest> updateValidator, CurrentUserService currentUser)
         {
+            _mediator = mediator;
             _uow = uow;
             _createValidator = createValidator;
             _updateValidator = updateValidator;

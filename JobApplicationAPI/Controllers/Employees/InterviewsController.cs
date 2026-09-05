@@ -4,6 +4,7 @@ using FluentValidation;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Interviews;
 using JobApplicationAPI.Services;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,12 +15,15 @@ namespace JobApplicationAPI.Controllers.Employees
     [Authorize(Roles = "Employee")]
     public class InterviewsController : ControllerBase
     {
+        private readonly IMediator _mediator;
+
         private readonly IUnitOfWork _uow;
         private readonly IValidator<CreateInterviewRequest> _createValidator;
         private readonly CurrentUserService _currentUser;
 
-        public InterviewsController(IUnitOfWork uow, IValidator<CreateInterviewRequest> createValidator, CurrentUserService currentUser)
+        public InterviewsController(IMediator mediator, IUnitOfWork uow, IValidator<CreateInterviewRequest> createValidator, CurrentUserService currentUser)
         {
+            _mediator = mediator;
             _uow = uow;
             _createValidator = createValidator;
             _currentUser = currentUser;
@@ -105,7 +109,7 @@ namespace JobApplicationAPI.Controllers.Employees
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse>> Cancel([FromRoute] long id)
+        public async Task<ActionResult<ApiResponse>> Delete([FromRoute] long id)
         {
             var employee = await _currentUser.GetCurrentAsync<Employee>();
             if (employee is null)

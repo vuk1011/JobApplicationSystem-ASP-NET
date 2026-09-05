@@ -1,12 +1,15 @@
-﻿using MediatR;
+﻿using Domain.Repositories;
+using MediatR;
 
 namespace JobApplicationAPI.Queries.JobPostings
 {
     public class GetJobPostingForEmployeeHandler : IRequestHandler<GetJobPostingForEmployeeQuery, Unit>
     {
-        public GetJobPostingForEmployeeHandler()
+        private readonly IUnitOfWork _uow;
+
+        public GetJobPostingForEmployeeHandler(IUnitOfWork uow)
         {
-            
+            _uow = uow;
         }
 
         public async Task<Unit> Handle(GetJobPostingForEmployeeQuery request, CancellationToken cancellationToken)

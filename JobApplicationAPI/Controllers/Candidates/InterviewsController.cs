@@ -3,6 +3,7 @@ using Domain.Repositories;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Interviews;
 using JobApplicationAPI.Services;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,11 +14,14 @@ namespace JobApplicationAPI.Controllers.Candidates
     [Authorize(Roles = "Candidate")]
     public class InterviewsController : ControllerBase
     {
+        private readonly IMediator _mediator;
+
         private readonly IUnitOfWork _uow;
         private readonly CurrentUserService _currentUser;
 
-        public InterviewsController(IUnitOfWork uow, CurrentUserService currentUser)
+        public InterviewsController(IMediator mediator, IUnitOfWork uow, CurrentUserService currentUser)
         {
+            _mediator = mediator;
             _uow = uow;
             _currentUser = currentUser;
         }

@@ -4,6 +4,7 @@ using FluentValidation;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Offers;
 using JobApplicationAPI.Services;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,12 +15,15 @@ namespace JobApplicationAPI.Controllers.Employees
     [Authorize(Roles = "Employee")]
     public class OffersController : ControllerBase
     {
+        private readonly IMediator _mediator;
+
         private readonly IUnitOfWork _uow;
         private readonly IValidator<CreateOfferRequest> _createValidator;
         private readonly CurrentUserService _currentUser;
 
-        public OffersController(IUnitOfWork uow, IValidator<CreateOfferRequest> createValidator, CurrentUserService currentUser)
+        public OffersController(IMediator mediator, IUnitOfWork uow, IValidator<CreateOfferRequest> createValidator, CurrentUserService currentUser)
         {
+            _mediator = mediator;
             _uow = uow;
             _createValidator = createValidator;
             _currentUser = currentUser;

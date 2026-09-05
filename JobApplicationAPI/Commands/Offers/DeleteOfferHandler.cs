@@ -1,12 +1,15 @@
-﻿using MediatR;
+﻿using Domain.Repositories;
+using MediatR;
 
 namespace JobApplicationAPI.Commands.Offers
 {
     public class DeleteOfferHandler : IRequestHandler<DeleteOfferCommand, Unit>
     {
-        public DeleteOfferHandler()
+        private readonly IUnitOfWork _uow;
+
+        public DeleteOfferHandler(IUnitOfWork uow)
         {
-            
+            _uow = uow;
         }
 
         public async Task<Unit> Handle(DeleteOfferCommand request, CancellationToken cancellationToken)

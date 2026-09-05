@@ -5,6 +5,7 @@ using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.JobApplications;
 using JobApplicationAPI.Services;
 using JobApplicationAPI.Utilities;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,12 +16,16 @@ namespace JobApplicationAPI.Controllers.Candidates
     [Authorize(Roles = "Candidate")]
     public class JobApplicationsController : ControllerBase
     {
+        private readonly IMediator _mediator;
+
         private readonly IUnitOfWork _uow;
         private readonly IValidator<SubmitJobApplicationRequest> _submitValidator;
         private readonly CurrentUserService _currentUser;
 
-        public JobApplicationsController(IUnitOfWork uow, IValidator<SubmitJobApplicationRequest> submitValidator, CurrentUserService currentUser)
+        public JobApplicationsController(IMediator mediator, IUnitOfWork uow, IValidator<SubmitJobApplicationRequest> submitValidator, CurrentUserService currentUser)
         {
+            _mediator = mediator;
+
             _uow = uow;
             _submitValidator = submitValidator;
             _currentUser = currentUser;

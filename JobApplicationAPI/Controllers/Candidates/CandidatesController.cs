@@ -6,6 +6,7 @@ using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Users;
 using JobApplicationAPI.Services;
 using JobApplicationAPI.Utilities;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -17,13 +18,17 @@ namespace JobApplicationAPI.Controllers.Candidates
     [Authorize(Roles = "Candidate")]
     public class CandidatesController : ControllerBase
     {
+        private readonly IMediator _mediator;
+
         private readonly IUnitOfWork _uow;
         private readonly UserManager<AppUser> _userManager;
         private readonly IValidator<UpdateCandidateRequest> _updateCandidateValidator;
         private readonly CurrentUserService _currentUser;
 
-        public CandidatesController(IUnitOfWork uow, UserManager<AppUser> userManager, IValidator<UpdateCandidateRequest> updateCandidateValidator, CurrentUserService currentUser)
+        public CandidatesController(IMediator mediator, IUnitOfWork uow, UserManager<AppUser> userManager, IValidator<UpdateCandidateRequest> updateCandidateValidator, CurrentUserService currentUser)
         {
+            _mediator = mediator;
+
             _uow = uow;
             _userManager = userManager;
             _updateCandidateValidator = updateCandidateValidator;
@@ -34,7 +39,7 @@ namespace JobApplicationAPI.Controllers.Candidates
         public async Task<IActionResult> GetResume()
         {
             var candidate = await _currentUser.GetCurrentAsync<Candidate>();
-            if (candidate is null || candidate.Resume is null || candidate.Resume.Length == 0)
+            if (candidate is null || candidate.Resume is null)
             {
                 return NotFound(new ApiResponse("Resume not uploaded"));
             }
