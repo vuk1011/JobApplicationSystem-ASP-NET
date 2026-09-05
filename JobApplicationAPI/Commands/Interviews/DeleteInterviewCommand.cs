@@ -2,5 +2,5 @@
 
 namespace JobApplicationAPI.Commands.Interviews
 {
-    public record DeleteInterviewCommand : IRequest<Unit>;
+    public record DeleteInterviewCommand(string? UserId, long InterviewId) : IRequest<Unit>;
 }

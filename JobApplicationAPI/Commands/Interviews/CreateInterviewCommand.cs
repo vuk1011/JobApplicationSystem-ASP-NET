@@ -1,6 +1,7 @@
-﻿using MediatR;
+﻿using JobApplicationAPI.DTOs.Interviews;
+using MediatR;
 
 namespace JobApplicationAPI.Commands.Interviews
 {
-    public record CreateInterviewCommand : IRequest<Unit>;
+    public record CreateInterviewCommand(string? UserId, CreateInterviewRequest Request) : IRequest<Unit>;
 }
