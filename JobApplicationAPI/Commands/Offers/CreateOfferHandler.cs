@@ -39,7 +39,7 @@ namespace JobApplicationAPI.Commands.Offers
             if (application.EmployeeId != employee.Id)
                 throw new UnauthorizedException("Another employee is managing this job application");
             if (!JobApplicationStatusUtil.IsStatusChangeAllowed(application.Status, JobApplicationStatus.OFFERED))
-                throw new ConflictException("Offer cannot be created in current status"));
+                throw new ConflictException("Offer cannot be created in current status");
 
             application.Status = JobApplicationStatus.OFFERED;
             _uow.JobApplications.Update(application);
