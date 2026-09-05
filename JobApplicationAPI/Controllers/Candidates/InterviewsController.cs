@@ -1,11 +1,10 @@
-using Domain.Entities;
-using Domain.Repositories;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Interviews;
-using JobApplicationAPI.Services;
+using JobApplicationAPI.Queries.Interviews;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace JobApplicationAPI.Controllers.Candidates
 {
@@ -16,38 +15,17 @@ namespace JobApplicationAPI.Controllers.Candidates
     {
         private readonly IMediator _mediator;
 
-        private readonly IUnitOfWork _uow;
-        private readonly CurrentUserService _currentUser;
-
-        public InterviewsController(IMediator mediator, IUnitOfWork uow, CurrentUserService currentUser)
+        public InterviewsController(IMediator mediator)
         {
             _mediator = mediator;
-            _uow = uow;
-            _currentUser = currentUser;
         }
 
         [HttpGet]
         public async Task<ActionResult<ApiResponse<List<InterviewDto>>>> GetAll([FromQuery] long jobApplicationId)
         {
-            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
-            if (candidate is null)
-            {
-                return Unauthorized(new ApiResponse("Candidate not found"));
-            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var application = _uow.JobApplications.GetByIdWithDetails(jobApplicationId);
-            if (application is null)
-            {
-                return NotFound(new ApiResponse("Job application not found"));
-            }
-            if (application.CandidateId != candidate.Id)
-            {
-                return Unauthorized(new ApiResponse("You're unauthorized for this job application"));
-            }
-
-            var interviews = _uow.Interviews.GetByJobApplicationId(jobApplicationId)
-                .Select(i => new InterviewDto { Id = i.Id, Title = i.Title, Description = i.Description, TimeScheduled = i.TimeScheduled })
-                .ToList();
+            var interviews = await _mediator.Send(new GetInterviewsForCandidateQuery(userId, jobApplicationId));
 
             return Ok(new ApiResponse<List<InterviewDto>>("Successfully retrieved interviews for job application", interviews));
         }
