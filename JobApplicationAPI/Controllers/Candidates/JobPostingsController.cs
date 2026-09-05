@@ -1,9 +1,10 @@
-using Domain.Repositories;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.JobPostings;
-using JobApplicationAPI.Utilities;
+using JobApplicationAPI.Queries.JobPostings;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace JobApplicationAPI.Controllers.Candidates
 {
@@ -12,17 +13,20 @@ namespace JobApplicationAPI.Controllers.Candidates
     [Authorize(Roles = "Candidate")]
     public class JobPostingsController : ControllerBase
     {
-        private readonly IUnitOfWork _uow;
+        private readonly IMediator _mediator;
 
-        public JobPostingsController(IUnitOfWork uow)
+        public JobPostingsController(IMediator mediator)
         {
-            _uow = uow;
+            _mediator = mediator;
         }
 
         [HttpGet]
-        public ActionResult<ApiResponse<List<JobPostingDto>>> GetAll()
+        public async Task<ActionResult<ApiResponse<List<JobPostingDto>>>> GetAll()
         {
-            var jobPostings = _uow.JobPostings.GetAllPublished().Select(JobPostingMapper.ToDto).ToList();
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var jobPostings = await _mediator.Send(new GetJobPostingsPublishedQuery(userId));
+
             return Ok(new ApiResponse<List<JobPostingDto>>("Job postings retrieved", jobPostings));
         }
     }

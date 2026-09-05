@@ -1,14 +1,11 @@
-using Domain.Entities;
-using Domain.Repositories;
-using FluentValidation;
-using Infrastructure.Identity;
+using JobApplicationAPI.Commands.Candidates;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.Users;
-using JobApplicationAPI.Services;
-using JobApplicationAPI.Utilities;
+using JobApplicationAPI.Queries.Candidates;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace JobApplicationAPI.Controllers.Candidates
 {
@@ -17,30 +14,22 @@ namespace JobApplicationAPI.Controllers.Candidates
     [Authorize(Roles = "Candidate")]
     public class CandidatesController : ControllerBase
     {
-        private readonly IUnitOfWork _uow;
-        private readonly UserManager<AppUser> _userManager;
-        private readonly IValidator<UpdateCandidateRequest> _updateCandidateValidator;
-        private readonly CurrentUserService _currentUser;
+        private readonly IMediator _mediator;
 
-        public CandidatesController(IUnitOfWork uow, UserManager<AppUser> userManager, IValidator<UpdateCandidateRequest> updateCandidateValidator, CurrentUserService currentUser)
+        public CandidatesController(IMediator mediator)
         {
-            _uow = uow;
-            _userManager = userManager;
-            _updateCandidateValidator = updateCandidateValidator;
-            _currentUser = currentUser;
+            _mediator = mediator;
         }
 
         [HttpGet("resume")]
         public async Task<IActionResult> GetResume()
         {
-            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
-            if (candidate is null || candidate.Resume is null || candidate.Resume.Length == 0)
-            {
-                return NotFound(new ApiResponse("Resume not uploaded"));
-            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var resumeBytes = await _mediator.Send(new GetResumeQuery(userId));
 
             Response.Headers.ContentDisposition = "inline; filename=\"resume.pdf\"";
-            return File(candidate.Resume, "application/pdf");
+            return File(resumeBytes, "application/pdf");
         }
 
         [HttpPut("resume")]
@@ -51,17 +40,9 @@ namespace JobApplicationAPI.Controllers.Candidates
                 return BadRequest(new ApiResponse("Only PDF resumes are allowed"));
             }
 
-            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
-            if (candidate is null)
-            {
-                return Unauthorized(new ApiResponse("Candidate not found"));
-            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            using var memoryStream = new MemoryStream();
-            await file.CopyToAsync(memoryStream);
-            candidate.Resume = memoryStream.ToArray();
-            _uow.Candidates.Update(candidate);
-            await _uow.SaveChangesAsync();
+            await _mediator.Send(new UpdateResumeCommand(userId, file.OpenReadStream()));
 
             return Ok(new ApiResponse("Resume uploaded successfully"));
         }
@@ -69,15 +50,9 @@ namespace JobApplicationAPI.Controllers.Candidates
         [HttpDelete("resume")]
         public async Task<ActionResult<ApiResponse>> DeleteResume()
         {
-            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
-            if (candidate is null)
-            {
-                return Unauthorized(new ApiResponse("Candidate not found"));
-            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            candidate.Resume = null;
-            _uow.Candidates.Update(candidate);
-            await _uow.SaveChangesAsync();
+            await _mediator.Send(new DeleteResumeCommand(userId));
 
             return Ok(new ApiResponse("Resume deleted successfully"));
         }
@@ -85,53 +60,21 @@ namespace JobApplicationAPI.Controllers.Candidates
         [HttpGet("profile")]
         public async Task<ActionResult<ApiResponse<CandidateDto>>> GetProfile()
         {
-            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
-            if (candidate is null)
-            {
-                return Unauthorized(new ApiResponse("Candidate not found"));
-            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var appUser = await _userManager.FindByIdAsync(candidate.AppUserId);
-            if (appUser is null)
-            {
-                return NotFound(new ApiResponse("Candidate not found"));
-            }
+            var candidateDto = await _mediator.Send(new GetCandidateQuery(userId));
 
-            return Ok(new ApiResponse<CandidateDto>("Profile information retrieved successfully", CandidateMapper.ToDto(candidate, appUser)));
+            return Ok(new ApiResponse<CandidateDto>("Profile information retrieved successfully", candidateDto));
         }
 
         [HttpPut("profile")]
         public async Task<ActionResult<ApiResponse<CandidateDto>>> UpdateProfile([FromBody] UpdateCandidateRequest request)
         {
-            var validationResult = await _updateCandidateValidator.ValidateAsync(request);
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(new ApiResponse(string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage))));
-            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
-            if (candidate is null)
-            {
-                return Unauthorized(new ApiResponse("Candidate not found"));
-            }
+            var candidateDto = await _mediator.Send(new UpdateCandidateCommand(userId, request));
 
-            var appUser = await _userManager.FindByIdAsync(candidate.AppUserId);
-            if (appUser is null)
-            {
-                return NotFound(new ApiResponse("Candidate not found"));
-            }
-
-            candidate.FirstName = request.FirstName;
-            candidate.LastName = request.LastName;
-            candidate.Sex = request.Sex;
-            candidate.Address = request.Address;
-            _uow.Candidates.Update(candidate);
-            await _uow.SaveChangesAsync();
-
-            appUser.PhoneNumber = request.Phone;
-            await _userManager.UpdateAsync(appUser);
-
-            return Ok(new ApiResponse<CandidateDto>("Profile information updated successfully", CandidateMapper.ToDto(candidate, appUser)));
+            return Ok(new ApiResponse<CandidateDto>("Profile information updated successfully", candidateDto));
         }
     }
 }

@@ -1,12 +1,11 @@
-using Domain.Entities;
-using Domain.Repositories;
-using FluentValidation;
+using JobApplicationAPI.Commands.JobApplications;
 using JobApplicationAPI.DTOs;
 using JobApplicationAPI.DTOs.JobApplications;
-using JobApplicationAPI.Services;
-using JobApplicationAPI.Utilities;
+using JobApplicationAPI.Queries.JobApplications;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace JobApplicationAPI.Controllers.Candidates
 {
@@ -15,57 +14,19 @@ namespace JobApplicationAPI.Controllers.Candidates
     [Authorize(Roles = "Candidate")]
     public class JobApplicationsController : ControllerBase
     {
-        private readonly IUnitOfWork _uow;
-        private readonly IValidator<SubmitJobApplicationRequest> _submitValidator;
-        private readonly CurrentUserService _currentUser;
+        private readonly IMediator _mediator;
 
-        public JobApplicationsController(IUnitOfWork uow, IValidator<SubmitJobApplicationRequest> submitValidator, CurrentUserService currentUser)
+        public JobApplicationsController(IMediator mediator)
         {
-            _uow = uow;
-            _submitValidator = submitValidator;
-            _currentUser = currentUser;
+            _mediator = mediator;
         }
 
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> Submit([FromBody] SubmitJobApplicationRequest request)
         {
-            var validationResult = await _submitValidator.ValidateAsync(request);
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(new ApiResponse(string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage))));
-            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
-            if (candidate is null)
-            {
-                return Unauthorized(new ApiResponse("Candidate not found"));
-            }
-
-            var jobPosting = _uow.JobPostings.GetByIdWithCompany(request.JobPostingId);
-            if (jobPosting is null)
-            {
-                return NotFound(new ApiResponse("Job posting not found"));
-            }
-
-            if (_uow.JobApplications.existsByCandidateIdAndJobPostingId(candidate.Id, request.JobPostingId))
-            {
-                return Conflict(new ApiResponse("You already applied for this job posting"));
-            }
-
-            if (jobPosting.IsClosed)
-            {
-                return BadRequest(new ApiResponse("Job posting closed"));
-            }
-
-            var application = new JobApplication
-            {
-                DateOfSubmission = DateOnly.FromDateTime(DateTime.Today),
-                Status = JobApplicationStatus.SUBMITTED,
-                JobPostingId = jobPosting.Id,
-                CandidateId = candidate.Id,
-            };
-            _uow.JobApplications.Add(application);
-            await _uow.SaveChangesAsync();
+            await _mediator.Send(new CreateJobApplicationCommand(userId, request));
 
             return Ok(new ApiResponse("Successfully submitted an application"));
         }
@@ -73,56 +34,29 @@ namespace JobApplicationAPI.Controllers.Candidates
         [HttpGet]
         public async Task<ActionResult<ApiResponse<List<JobApplicationCandidateDto>>>> GetAll()
         {
-            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
-            if (candidate is null)
-            {
-                return Unauthorized(new ApiResponse("Candidate not found"));
-            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var applications = _uow.JobApplications.GetByCandidateId(candidate.Id).Select(JobApplicationMapper.ToCandidateDto).ToList();
-            return Ok(new ApiResponse<List<JobApplicationCandidateDto>>("Successfully retrieved all applications", applications));
+            var jobApplications = await _mediator.Send(new GetJobApplicationsForCandidateQuery(userId));
+
+            return Ok(new ApiResponse<List<JobApplicationCandidateDto>>("Successfully retrieved all applications", jobApplications));
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<JobApplicationCandidateDto>>> Get([FromRoute] long id)
         {
-            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
-            if (candidate is null)
-            {
-                return Unauthorized(new ApiResponse("Candidate not found"));
-            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var application = _uow.JobApplications.GetByIdForCandidate(id, candidate.Id);
-            if (application is null)
-            {
-                return NotFound(new ApiResponse("Job application not found"));
-            }
+            var jobApplication = await _mediator.Send(new GetJobApplicationForCandidateQuery(userId, id));
 
-            return Ok(new ApiResponse<JobApplicationCandidateDto>("Successfully retrieved the application", JobApplicationMapper.ToCandidateDto(application)));
+            return Ok(new ApiResponse<JobApplicationCandidateDto>("Successfully retrieved the application", jobApplication));
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse>> Withdraw([FromRoute] long id)
         {
-            var candidate = await _currentUser.GetCurrentAsync<Candidate>();
-            if (candidate is null)
-            {
-                return Unauthorized(new ApiResponse("Candidate not found"));
-            }
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var application = _uow.JobApplications.GetByIdForCandidate(id, candidate.Id);
-            if (application is null)
-            {
-                return NotFound(new ApiResponse("Job application not found"));
-            }
-
-            if (application.Status is JobApplicationStatus.OFFERED or JobApplicationStatus.ACCEPTED or JobApplicationStatus.REJECTED)
-            {
-                return Conflict(new ApiResponse("Job application cannot be withdrawn if state is Offered, Accepted or Rejected"));
-            }
-
-            _uow.JobApplications.Remove(application);
-            await _uow.SaveChangesAsync();
+            await _mediator.Send(new DeleteJobApplicationCommand(userId, id));
 
             return Ok(new ApiResponse("Successfully withdrawn an application"));
         }
