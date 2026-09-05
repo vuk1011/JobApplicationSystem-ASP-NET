@@ -1,6 +1,7 @@
-﻿using MediatR;
+﻿using JobApplicationAPI.DTOs.JobApplications;
+using MediatR;
 
 namespace JobApplicationAPI.Queries.JobApplications
 {
-    public record GetUnmanagedJobApplicationsByJobPostingQuery : IRequest<Unit>;
+    public record GetUnmanagedJobApplicationsByJobPostingQuery(string? UserId, long JobPostingId) : IRequest<List<JobApplicationEmployeeDto>>;
 }

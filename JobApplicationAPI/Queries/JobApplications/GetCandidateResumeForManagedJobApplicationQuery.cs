@@ -2,5 +2,5 @@
 
 namespace JobApplicationAPI.Queries.JobApplications
 {
-    public record GetCandidateResumeForManagedJobApplicationQuery : IRequest<Unit>;
+    public record GetCandidateResumeForManagedJobApplicationQuery(string? UserId, long JobApplicationId) : IRequest<byte[]>;
 }

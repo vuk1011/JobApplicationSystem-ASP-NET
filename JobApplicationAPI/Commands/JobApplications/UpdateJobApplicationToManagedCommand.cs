@@ -1,6 +1,7 @@
-﻿using MediatR;
+﻿using JobApplicationAPI.DTOs.JobApplications;
+using MediatR;
 
 namespace JobApplicationAPI.Commands.JobApplications
 {
-    public record UpdateJobApplicationToManagedCommand : IRequest<Unit>;
+    public record UpdateJobApplicationToManagedCommand(string? UserId, ManageJobApplicationRequest Request) : IRequest<Unit>;
 }

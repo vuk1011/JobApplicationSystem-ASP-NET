@@ -1,5 +1,7 @@
-﻿using Domain.Repositories;
+﻿using Domain.Entities;
+using Domain.Repositories;
 using FluentValidation;
+using JobApplicationAPI.Common.Exceptions;
 using JobApplicationAPI.DTOs.JobApplications;
 using MediatR;
 
@@ -18,7 +20,31 @@ namespace JobApplicationAPI.Commands.JobApplications
 
         public async Task<Unit> Handle(UpdateJobApplicationToManagedCommand request, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(request.UserId))
+                throw new BadRequestException("Couldn't resolve user");
+
+            var employee = await _uow.Employees.GetByAppUserIdAsync(request.UserId);
+            if (employee is null)
+                throw new ResourceNotFoundException("Couldn't find employee");
+
+
+
+            var validationResult = await _validator.ValidateAsync(request.Request);
+            if (!validationResult.IsValid)
+                throw new BadRequestException(string.Join(" ", validationResult.Errors.Select(e => e.ErrorMessage)));
+
+            var application = _uow.JobApplications.GetByIdWithDetails(request.Request.ApplicationId);
+            if (application is null)
+                throw new ResourceNotFoundException("Job application not found");
+            if (application.IsManaged)
+                throw new ConflictException("This job application is already managed");
+
+            application.EmployeeId = employee.Id;
+            application.Status = JobApplicationStatus.UNDER_REVIEW;
+            _uow.JobApplications.Update(application);
+            await _uow.SaveChangesAsync();
+
+            return Unit.Value;
         }
     }
 }
